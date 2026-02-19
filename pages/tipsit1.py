@@ -67,29 +67,36 @@ def run(playwright):
     page.locator("#dx-checkbox-3 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
     page.locator("#dx-checkbox-4 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
     
-    page.pause()
-
-    page.get_by_role("option", name="Submit for TPM Staff Approval").click()
-
-        # After Submit for TPM
-    quote_no = page.locator("#quoteNumber").inner_text().strip()
-    print("Quote Number:", quote_no)
+    page.locator("#isUploadLater-desktop > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
+    page.locator("dx-evidence-upload").get_by_role("textbox").click()
+    page.locator("dx-evidence-upload").get_by_role("textbox").fill("Will Upload later")
 
 
-    
+    # Locate the element that contains the quote reference
+    quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
+
+    # Extract only the number
+    quote_number = quote_text.strip()
+
+    print("Captured Quote Number:", quote_number)
+
+    page.get_by_role("button", name="Submit for TPM Staff Approval").click()
+
+    page.wait_for_timeout(10000)
     
             # ===== INCOGNITO SESSION (Branch Manager) =====
     manager_context = browser.new_context()
     manager_page = manager_context.new_page()
 
-    manager_page.goto("https://tune.sit.indigit.io/#/qms/quote/motor/reg/cover-details?edit=true&quoteNr={quote_no}")
+    manager_page.goto(f"https://tune.sit.indigit.io/#/qms/quote/motor/reg/cover-details?edit=true&quoteNr={quote_number}")
+    
 
-    manager_page.get_by_role("textbox", name="Username or email").fill("chinyap.oh@tuneprotect.com")
-    manager_page.get_by_role("textbox", name="Password").fill("Serole@123")
+    manager_page.get_by_role("textbox", name="Username or email").fill("sbuhead@gmail.com")
+    manager_page.get_by_role("textbox", name="Password").fill("Tune@112")
     manager_page.get_by_role("button", name="Login").click()
 
-    manager_context.close()
-    
+    manager_page.wait_for_timeout(10000)
+    manager_page.pause()
 
 
     #page.get_by_role("button", name="Proceed to Policy Issuance").click()

@@ -74,15 +74,12 @@ def run(playwright):
 
     # Locate the element that contains the quote reference
     quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
-
-    # Extract only the number
     quote_number = quote_text.strip()
-
     print("Captured Quote Number:", quote_number)
 
     page.get_by_role("button", name="Submit for TPM Staff Approval").click()
 
-    page.wait_for_timeout(10000)
+    page.wait_for_timeout(17000)
     
             # ===== INCOGNITO SESSION (Branch Manager) =====
     manager_context = browser.new_context()

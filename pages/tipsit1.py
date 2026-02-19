@@ -31,7 +31,7 @@ def run(playwright):
     page.get_by_role("button", name="Save Vehicle Info").click()
 
     page.locator("mat-form-field").filter(has_text="Inception Date * event").get_by_label("Open calendar").click()
-    page.get_by_role("button", name="February 18,").click()
+    page.get_by_role("button", name="February 20,").click()
 
     #page.wait_for_timeout(5000)
     page.locator("dx-input-currency").filter(has_text="* Vehicle Sum Insured *").locator("#sumInsured").click()

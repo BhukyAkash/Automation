@@ -1,1 +1,10 @@
+# Python
 __pycache__/
+*.pyc
+
+# Playwright / project folders
+conftest.py
+policy/
+tests/
+traces/
+utils/

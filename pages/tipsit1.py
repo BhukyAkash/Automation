@@ -63,13 +63,13 @@ def run(playwright):
     page.locator(".mat-select-placeholder").click()
     page.get_by_role("option", name="Driver’s Side Airbags (1)").click()
 
+
+    page.locator("#dx-checkbox-3 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
+    page.locator("#dx-checkbox-4 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
+    
     page.pause()
 
-    page.locator("#dx-checkbox-4 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
-    page.locator("#dx-checkbox-5 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
-
-
-    page.get_by_text("Submit for TPM Staff Approval", exact=True).click()
+    page.get_by_role("option", name="Submit for TPM Staff Approval").click()
 
         # After Submit for TPM
     quote_no = page.locator("#quoteNumber").inner_text().strip()

@@ -1,6 +1,8 @@
 import re
 from playwright.sync_api import sync_playwright
 
+from conftest import page
+
 
 def run(playwright):
     browser = playwright.firefox.launch(headless=False, slow_mo=1000)
@@ -92,12 +94,27 @@ def run(playwright):
     manager_page.get_by_role("textbox", name="Password").fill("Tune@112")
     manager_page.get_by_role("button", name="Login").click()
 
-    manager_page.wait_for_timeout(10000)
-    manager_page.pause()
+    manager_page.wait_for_timeout(15000)
+    
+    #Approving the quote
+    manager_page.get_by_role("button", name="Accept & Process").click()
+
+    manager_page.close()
 
 
-    #page.get_by_role("button", name="Proceed to Policy Issuance").click()
-    #page.get_by_role("button", name="Issue Policy").click()
+        # ====== BACK TO ORIGINAL SESSION (TPM AGENT) =====
+    page.reload()
+    page.wait_for_load_state("networkidle")
+
+
+    page.get_by_role("button", name="Issue Policy").click()
+
+    page.wait_for_timeout(30000)
+    page.reload()
+    page.wait_for_timeout(15000)
+    page.get_by_text("Policy #:").click()
+
+    #page.pause()
 
 with sync_playwright() as playwright:
     run(playwright)

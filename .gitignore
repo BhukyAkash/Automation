@@ -6,5 +6,5 @@ __pycache__/
 conftest.py
 policy/
 tests/
-traces/
+
 utils/

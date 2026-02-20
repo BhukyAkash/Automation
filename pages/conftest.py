@@ -13,7 +13,7 @@ def page(request):
     print(f"\n[TRACE] Saving trace to: {trace_path}")
 
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=False, slow_mo=1000)
+        browser = playwright.firefox.launch(headless=False)
 
         #  MAXIMIZE WINDOW
         context = browser.new_context(viewport=None )

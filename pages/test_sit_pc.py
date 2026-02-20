@@ -1,3 +1,4 @@
+from conftest import page
 from excel_utils import get_vehicle_data
 from datetime import datetime
 
@@ -16,8 +17,6 @@ def test_tipsit_motor_quote(page):
         page.get_by_role("textbox", name="Password").fill("Serole@123")
         page.get_by_role("button", name="Login").click()
 
-        page.pause()
-
         page.wait_for_load_state("networkidle")
 
         # ---------- NAVIGATION ----------
@@ -32,7 +31,7 @@ def test_tipsit_motor_quote(page):
 
         #----------Place of Use----------
         page.locator(".mat-select-placeholder").click()
-        page.get_by_role("option", name="Kedah").click()
+        page.get_by_role("option", name="Johor").click()
 
         #--------Vehicle Search--------
         page.get_by_role("button", name="search Vehicle Search").click()
@@ -61,9 +60,6 @@ def test_tipsit_motor_quote(page):
         page.get_by_role("gridcell", name=aria_date).click()
 
 
-        '''page.locator("mat-form-field").filter(has_text="Inception Date * event").get_by_label("Open calendar").click()
-        page.get_by_role("button", name="February 5,").click()'''
-
 
         #---------- VEHICLE SUM INSURED ----------
         page.locator("dx-input-currency").filter(has_text="* Vehicle Sum Insured *").locator("#sumInsured").click()
@@ -82,32 +78,74 @@ def test_tipsit_motor_quote(page):
 
         #---------- THIRD SCREEN---COVER DETAILS ----------
 
-        page.goto("https://tune.sit.indigit.io/#/qms/quote/motor/reg/cover-details?quoteNr=1000118172")
+        page.locator(".mat-select-placeholder").first.click()
+        page.get_by_role("option", name="Less than 2 years").click()
 
-        #page.get_by_role("button", name="Yes").click()
+        page.get_by_role("button", name="Yes").click()
         
         page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="unlocked Garage").click()
+        page.get_by_role("option", name="Public Road").click()
 
         page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="Others(WITH MECHANICAL DEVICE)").click()
+        page.get_by_role("option", name="No Alarm(WITHOUT MECHANICAL").click()
 
         page.locator(".mat-select-placeholder").click()
-        page.get_by_role("option", name="Driver & Passenger Airbags(2)").click()
+        page.get_by_role("option", name="Driver’s Side Airbags (1)").click()
 
-        page.pause()
 
         page.locator("#dx-checkbox-4 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
         page.locator("#dx-checkbox-5 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
 
 
-        #---------- APPROVED & VERIFIED ----------
-        page.get_by_role("button", name="Proceed to Policy Issuance").click()
+        page.locator("#isUploadLater-desktop > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
+        page.locator("dx-evidence-upload").get_by_role("textbox").click()
+        page.locator("dx-evidence-upload").get_by_role("textbox").fill("Will Upload later")
 
 
-        page.goto("https://tune.sit.indigit.io/#/qms/quote/motor/reg/review?quoteNr=1000118172")
+        # Locate the element that contains the quote reference
+        quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
+        quote_number = quote_text.strip()
+        print("Captured Quote Number:", quote_number)
 
-        #---------- ISSUE POLICY BUTTON ----------
-        #page.get_by_role("button", name="Issue Policy").click()
+        page.get_by_role("button", name="Submit for TPM Staff Approval").click()
+
+        page.wait_for_timeout(17000)
+
+
+        
+                # ===== INCOGNITO SESSION (Branch Manager) =====
+        browser = page.context.browser
+        manager_context = browser.new_context()
+        manager_page = manager_context.new_page()
+
+        manager_page.goto(f"https://tune.sit.indigit.io/#/qms/quote/motor/reg/cover-details?edit=true&quoteNr={quote_number}")
+        
+
+        manager_page.get_by_role("textbox", name="Username or email").fill("chinyap.oh@tuneprotect.com")
+        manager_page.get_by_role("textbox", name="Password").fill("Serole@123")
+        manager_page.get_by_role("button", name="Login").click()
+
+        manager_page.wait_for_timeout(10000)
+        
+        #-----Approving the quote--
+        manager_page.get_by_role("button", name="Accept & Process").click()
+
+        manager_page.close()
+
+
+                # ====== BACK TO ORIGINAL SESSION (TPM AGENT) =====
+        page.reload()
+        page.wait_for_load_state("networkidle")
+
+        #---------- POLICY ISSUANCE ----------
+        page.get_by_role("button", name="Issue Policy").click()
+
+        page.reload()
+
+        #----Printing the policy number---
+        policy_number = page.get_by_text("Policy #:").locator("xpath=following-sibling::*").inner_text()
+        print("Policy Number:", policy_number)
+
+
         page.pause()
 

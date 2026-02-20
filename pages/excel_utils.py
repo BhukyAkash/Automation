@@ -9,8 +9,8 @@ def get_vehicle_data():
     sheet = wb.active
 
     data = {
-        "vehicle_reg_no": sheet["A3"].value,
-        "mykad": sheet["B3"].value
+        "vehicle_reg_no": sheet["A12"].value,
+        "mykad": sheet["B12"].value
     
     }
     return data

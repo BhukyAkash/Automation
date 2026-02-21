@@ -6,7 +6,6 @@ from datetime import datetime
 
 def test_tipuat_motor(page):
     
-
     page.goto("https://ath-uat.tuneinsurance.com/realms/tune/protocol/openid-connect/auth?response_type=code&client_id=1003&state=VEJYMU9YQ3pVaGZGemotRTNLMGN4OHhFaXc3ZmQ1cldaRXRFMG4wbDJBT0Rr&redirect_uri=https%3A%2F%2Fagent-uat.tuneinsurance.com%2F%23%2Fhome&scope=openid%20profile&code_challenge=TSCey8KaEFyGzZ5lgGfWXplgcJ1ivvARav8R4bnYPfM&code_challenge_method=S256&nonce=VEJYMU9YQ3pVaGZGemotRTNLMGN4OHhFaXc3ZmQ1cldaRXRFMG4wbDJBT0Rr")
     
     page.get_by_role("textbox", name="Username or email").click()
@@ -14,7 +13,6 @@ def test_tipuat_motor(page):
     page.get_by_role("textbox", name="Password").click()
     page.get_by_role("textbox", name="Password").fill("Serole@123")
     page.get_by_role("button", name="Login").click()
-
 
 
     # =========== NAVIGATION ===========
@@ -129,14 +127,14 @@ def test_tipuat_motor(page):
     manager_context = browser.new_context()
     manager_page = manager_context.new_page()
 
-    manager_page.goto(f"https://agent-uat.tuneinsurance.com/#/qms/quote/motor/reg/cover-details?edit=true&quoteNr=1000061454")
+    manager_page.goto(f"https://agent-uat.tuneinsurance.com/#/qms/quote/motor/reg/cover-details?edit=true&quoteNr={quote_number}")
     
 
     manager_page.get_by_role("textbox", name="Username or email").fill("rahul@serole.com")
     manager_page.get_by_role("textbox", name="Password").fill("Serole@321")
     manager_page.get_by_role("button", name="Login").click()
 
-    manager_page.wait_for_timeout(15000)
+    manager_page.wait_for_timeout(30000)
     
     #-----Approving the quote--
     manager_page.get_by_role("button", name="Accept & Process").click()
@@ -156,11 +154,14 @@ def test_tipuat_motor(page):
 
     page.reload()
 
-    page.wait_for_timeout(10000)
+    page.wait_for_timeout(7000)
 
     #----Printing the policy number---
-    policy_number = page.get_by_text("Policy #:").locator("xpath=following-sibling::*").inner_text()
-    print("Policy Number:", policy_number)
+    policy_locator = page.locator("text=Policy #:")
+    policy_text = policy_locator.text_content()
+    policy_number = policy_text.replace("Policy #:", "").strip()
 
+    print(policy_number)
 
-    page.pause()
+    page.content().close()  # Close the page content to free up resources
+

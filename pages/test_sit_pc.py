@@ -5,8 +5,6 @@ from datetime import datetime
 
 def test_tipsit_motor_quote(page):
 
-        page.context.close()
-
         # ---------- LOGIN ----------
         page.goto(
         "https://auth.sit.indigit.io/realms/Tune/protocol/openid-connect/auth"
@@ -127,7 +125,7 @@ def test_tipsit_motor_quote(page):
         manager_page.get_by_role("textbox", name="Password").fill("Serole@123")
         manager_page.get_by_role("button", name="Login").click()
 
-        manager_page.wait_for_timeout(10000)
+        manager_page.wait_for_timeout(15000)
         
         #-----Approving the quote--
         manager_page.get_by_role("button", name="Accept & Process").click()
@@ -141,13 +139,14 @@ def test_tipsit_motor_quote(page):
 
         #---------- POLICY ISSUANCE ----------
         page.get_by_role("button", name="Issue Policy").click()
+        page.wait_for_timeout(30000)
 
         page.reload()
+
+        page.wait_for_timeout(7000)
 
         #----Printing the policy number---
         policy_number = page.get_by_text("Policy #:").locator("xpath=following-sibling::*").inner_text()
         print("Policy Number:", policy_number)
-
-
-        page.pause()
+        page.content().close()  # Close the page content to free up resources
 

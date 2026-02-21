@@ -114,7 +114,7 @@ def test_tipuat_motor(page):
     # Locate the element that contains the quote reference
     quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
     quote_number = quote_text.strip()
-    print("Captured Quote Number:", quote_number)
+    print("Quote Number:", quote_number)
 
     page.get_by_role("button", name="Submit for TPM Staff Approval").click()
 
@@ -161,7 +161,6 @@ def test_tipuat_motor(page):
     policy_text = policy_locator.text_content()
     policy_number = policy_text.replace("Policy #:", "").strip()
 
-    print(policy_number)
+    print("Policy Number:", policy_number)
 
-    page.content().close()  # Close the page content to free up resources
 

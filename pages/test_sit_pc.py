@@ -5,6 +5,8 @@ from datetime import datetime
 
 def test_tipsit_motor_quote(page):
 
+        page.context.close()
+
         # ---------- LOGIN ----------
         page.goto(
         "https://auth.sit.indigit.io/realms/Tune/protocol/openid-connect/auth"

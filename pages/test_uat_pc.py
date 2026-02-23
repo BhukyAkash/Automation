@@ -2,13 +2,12 @@ from conftest import page
 from excel_utils import get_vehicle_data
 from datetime import datetime
 
-from base_login import base_login, navigation
+from base_login import login, navigation
 
 
-
-def test_tipuat_motor(page):
+def test_uat_motor(page):
     
-    base_login(page)
+    login(page)
     navigation(page)
 
     # ========= FIRST SCREEN ===========

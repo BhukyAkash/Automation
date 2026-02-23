@@ -14,9 +14,7 @@ def page(request):
 
     with sync_playwright() as playwright:
         browser = playwright.firefox.launch(headless=False)
-
-        #  MAXIMIZE WINDOW
-        context = browser.new_context(viewport=None )
+        context = browser.new_context()
 
 
         # ---------- START TRACE ----------

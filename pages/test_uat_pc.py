@@ -2,28 +2,14 @@ from conftest import page
 from excel_utils import get_vehicle_data
 from datetime import datetime
 
+from base_login import base_login, navigation
+
 
 
 def test_tipuat_motor(page):
     
-    page.goto("https://ath-uat.tuneinsurance.com/realms/tune/protocol/openid-connect/auth?response_type=code&client_id=1003&state=VEJYMU9YQ3pVaGZGemotRTNLMGN4OHhFaXc3ZmQ1cldaRXRFMG4wbDJBT0Rr&redirect_uri=https%3A%2F%2Fagent-uat.tuneinsurance.com%2F%23%2Fhome&scope=openid%20profile&code_challenge=TSCey8KaEFyGzZ5lgGfWXplgcJ1ivvARav8R4bnYPfM&code_challenge_method=S256&nonce=VEJYMU9YQ3pVaGZGemotRTNLMGN4OHhFaXc3ZmQ1cldaRXRFMG4wbDJBT0Rr")
-    
-    page.get_by_role("textbox", name="Username or email").click()
-    page.get_by_role("textbox", name="Username or email").fill("playwright.test@serole.com")
-    page.get_by_role("textbox", name="Password").click()
-    page.get_by_role("textbox", name="Password").fill("Serole@123")
-    page.get_by_role("button", name="Login").click()
-
-
-    # =========== NAVIGATION ===========
-
-    page.get_by_text("request_quote QMS Quotation").click()
-    page.get_by_role("button", name="New Quote").click()
-    page.get_by_role("heading", name="Motor").click()
-    page.get_by_role("button", name="Next").click()
-
-    page.get_by_role("textbox").click()
-
+    base_login(page)
+    navigation(page)
 
     # ========= FIRST SCREEN ===========
     
@@ -99,13 +85,11 @@ def test_tipuat_motor(page):
     page.get_by_role("option", name="Driver’s Side Airbags (1)").click()
 
 
-    #page.pause()
-
     page.locator("#dx-checkbox-3 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
     page.locator("#dx-checkbox-4 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
 
-    
 
+    # Uploading the document
     page.locator("#isUploadLater-desktop > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
     page.locator("dx-evidence-upload").get_by_role("textbox").click()
     page.locator("dx-evidence-upload").get_by_role("textbox").fill("Will Upload later")

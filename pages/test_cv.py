@@ -29,3 +29,5 @@ def test_tipuat_motor(page):
 
     #---- Vehicle Search ----
     page.get_by_role("button", name="search Vehicle Search").click()
+
+    page.pause()

@@ -20,3 +20,5 @@ def navigation(page):
 
     page.get_by_role("button", name="Next").click()
     page.get_by_role("textbox").click()
+
+    

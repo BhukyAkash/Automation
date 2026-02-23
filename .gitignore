@@ -2,9 +2,4 @@
 __pycache__/
 *.pyc
 
-# Playwright / project folders
-conftest.py
-policy/
-tests/
 
-utils/

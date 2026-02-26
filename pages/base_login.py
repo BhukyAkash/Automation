@@ -12,11 +12,11 @@ def navigation(page):
     page.get_by_role("button", name="New Quote").click()
     page.get_by_role("heading", name="Motor").click()
 
-    #for Private car & Motorcycle
-    page.get_by_role("heading", name="Reg. Motorcar/Motorcycle").click()
+    # === for Private car & Motorcycle ====
+    #page.get_by_role("heading", name="Reg. Motorcar/Motorcycle").click()
 
-    #for commercial vehicle
-    '''page.get_by_role("heading", name="Reg. Commercial Vehicle").click()'''
+    # === for commercial vehicle ====
+    page.get_by_role("heading", name="Reg. Commercial Vehicle").click()
 
     page.get_by_role("button", name="Next").click()
     page.get_by_role("textbox").click()

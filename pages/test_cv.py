@@ -38,7 +38,7 @@ def test_tipuat_motor(page):
 
 
 
-    page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-70").click()
+    page.locator("mat-form-field", has_text="Make").click()
     page.get_by_role("option", name="VOLVO").click()
     
     page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-72").click()
@@ -57,7 +57,6 @@ def test_tipuat_motor(page):
     page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("11")
     #page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("11")
 
-    page.pause()
 
     page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-84").click()
     page.get_by_role("option", name="Tonnes").click()
@@ -69,6 +68,9 @@ def test_tipuat_motor(page):
 
     page.locator("#mat-select-value-31").click()
     page.get_by_role("option", name="Comprehensive").click()
+
+    
+    page.pause()
 
     page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").click()
     page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").fill("15000")

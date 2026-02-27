@@ -33,5 +33,7 @@ def page(request):
         # ---------- STOP TRACE (overwrite per file) ----------
         context.tracing.stop(path=trace_path)
 
+        context.clear_cookies()   # 👈 forces logout
         context.close()
         browser.close()
+        

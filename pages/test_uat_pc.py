@@ -2,13 +2,14 @@ from conftest import page
 from excel_utils import get_vehicle_data
 from datetime import datetime
 
-from base_login import login, navigation
+from base_login import login, navigation, pc_moto
 
 
 def test_uat_motor(page):
     
     login(page)
     navigation(page)
+    pc_moto(page)
 
     # ========= FIRST SCREEN ===========
     
@@ -82,7 +83,6 @@ def test_uat_motor(page):
 
     page.locator(".mat-select-placeholder").click()
     page.get_by_role("option", name="Driver’s Side Airbags (1)").click()
-
 
     page.locator("#dx-checkbox-3 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
     page.locator("#dx-checkbox-4 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()

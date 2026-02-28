@@ -28,7 +28,7 @@ def test_uat_motor(page):
     page.get_by_role("button", name="Save Vehicle Info").click()
 
 
-    # ===========SECOND SCREEN ==========
+    # ========== SECOND SCREEN ==========
 
     #---- COVERAGE TYPE ----
     page.locator("#mat-select-value-9").click()
@@ -67,7 +67,6 @@ def test_uat_motor(page):
     page.get_by_role("button", name="Save & Next").click()
 
 
-
     # ========== THIRD SCREEN === COVER DETAILS ==========
 
     page.locator(".mat-select-placeholder").first.click()
@@ -102,7 +101,6 @@ def test_uat_motor(page):
     page.get_by_role("button", name="Submit for TPM Staff Approval").click()
 
     page.wait_for_timeout(17000)
-
 
     
             # ===== INCOGNITO SESSION (Branch Manager) =====

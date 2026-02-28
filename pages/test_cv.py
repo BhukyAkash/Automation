@@ -11,7 +11,6 @@ def test_tipuat_motor(page):
     navigation(page)
     cv_moto(page)
 
-
     # ========= FIRST SCREEN ===========
     
     # ---- VEHICLE REG ----
@@ -36,8 +35,6 @@ def test_tipuat_motor(page):
 
     page.locator("mat-form-field").filter(has_text="Chassis # *").locator("#chassisNo").fill("34576657")
     #page.locator("mat-form-field").filter(has_text="Chassis # *").locator("#chassisNo").fill("34576657")
-
-
 
     page.locator("mat-form-field", has_text="Make").click()
     page.get_by_role("option", name="VOLVO").click()
@@ -70,8 +67,26 @@ def test_tipuat_motor(page):
     page.locator("#mat-select-value-31").click()
     page.get_by_role("option", name="Comprehensive").click()
 
+
+    #---- COVERAGE DATE -----
+        # today date
+    today = datetime.today()
+
+        # Angular Material aria-label format
+    aria_date = today.strftime("%B %d, %Y").replace(" 0", " ")
+
+        # Open calendar
+    page.locator("mat-form-field") \
+        .filter(has_text="Inception Date * event") \
+        .get_by_label("Open calendar") \
+        .click()
+
+        # Select today
+    page.get_by_role("gridcell", name=aria_date).click()
+
+
     page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").click()
-    page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").fill("15000")
+    page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").fill("45000")
 
     '''page.locator("dx-input").filter(has_text="* Business Registration # *").locator("#id").click()
     page.locator("dx-input").filter(has_text="* Business Registration # *").locator("#id").fill("54375347")'''
@@ -111,7 +126,6 @@ def test_tipuat_motor(page):
     page.get_by_role("button", name="Submit for TPM Staff Approval").click()
 
     page.wait_for_timeout(17000)
-
 
     
             # ===== INCOGNITO SESSION (Branch Manager) =====

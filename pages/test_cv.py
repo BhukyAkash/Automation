@@ -25,33 +25,35 @@ def test_tipuat_motor(page):
     #---- Vehicle Search ----
     page.get_by_role("button", name="search Vehicle Search").click()
 
+    # ---- Vehicle Type ----
     page.locator(".mat-select-placeholder").first.click()
     page.get_by_role("option", name="Commercial Vehicle").click()
 
+    # ---- Vehicle Class ----
     page.locator(".mat-select-placeholder").first.click()
     page.get_by_role("option", name="C permit").click()
 
+    # ---- Engine Number ----
     page.locator("mat-form-field").filter(has_text="Engine # *").locator("#engineNo").fill("63547")
-    #page.locator("mat-form-field").filter(has_text="Engine # *").locator("#engineNo").fill("63547")
-
     page.locator("mat-form-field").filter(has_text="Chassis # *").locator("#chassisNo").fill("34576657")
-    #page.locator("mat-form-field").filter(has_text="Chassis # *").locator("#chassisNo").fill("34576657")
 
+    # ---- Make & Model -----
     page.locator("mat-form-field", has_text="Make").click()
     page.get_by_role("option", name="VOLVO").click()
     
     page.locator("mat-form-field", has_text="Model").click()
     page.get_by_role("option", name="F16").click()
 
+    # ---- Year of Manufacturer ----
     page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-74").click()
     page.get_by_role("option", name="2016").click()
 
+    # ---- Variant ----
     page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-76").click()
     page.get_by_role("option", name="NA").click()
 
-
+    # ---- Seating & Carrying Capacity -----
     page.locator("mat-form-field").filter(has_text="Seating Capacity *").locator("#seatCapacity").fill("5")
-
     page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("11")
 
 
@@ -61,8 +63,13 @@ def test_tipuat_motor(page):
     page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-86").click()
     page.get_by_role("option", name="Beverages Bottles").click()
 
+    # ---- Save Vehicle Info Button -----
     page.get_by_role("button", name="Save Vehicle Info").click()
 
+
+    # ========== SECOND SCREEN ==========
+
+    # ---- COVERAGE TYPE ----
     page.locator("#mat-select-value-31").click()
     page.get_by_role("option", name="Comprehensive").click()
 
@@ -84,21 +91,23 @@ def test_tipuat_motor(page):
     page.get_by_role("gridcell", name=aria_date).click()
 
 
+    # ---- SUM INSURED ----
     page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").click()
     page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").fill("45000")
 
-    '''page.locator("dx-input").filter(has_text="* Business Registration # *").locator("#id").click()
-    page.locator("dx-input").filter(has_text="* Business Registration # *").locator("#id").fill("54375347")'''
-
+    # ---- Business Regio -----
     page.locator("mat-form-field").filter(has_text="Business Registration # *").locator("#id").fill(vehicle_data["mykad"])
 
-    page.locator("dx-input").filter(has_text="* Name as per ID / Legal Name").locator("#legalName").click()
+    # ---- PH ----
     page.locator("dx-input").filter(has_text="* Name as per ID / Legal Name").locator("#legalName").fill("CV C Permit")
     
     page.get_by_role("button", name="search Validate Owner as per").click()
 
+    # ---Save & Next Button ----
     page.get_by_role("button", name="Save & Next").click()
 
+
+    # ========== THIRD SCREEN === COVER DETAILS ==========
 
     page.get_by_role("button", name="Yes").click()
 

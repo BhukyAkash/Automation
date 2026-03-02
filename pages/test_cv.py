@@ -51,10 +51,8 @@ def test_tipuat_motor(page):
 
 
     page.locator("mat-form-field").filter(has_text="Seating Capacity *").locator("#seatCapacity").fill("5")
-    #page.locator("mat-form-field").filter(has_text="Seating Capacity *").locator("#seatCapacity").fill("5")
 
     page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("11")
-    #page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("11")
 
 
     page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-84").click()

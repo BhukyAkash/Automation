@@ -14,7 +14,7 @@ def test_tipuat_motor(page):
     # ========= FIRST SCREEN ===========
     
     # ---- VEHICLE REG ----
-    vehicle_data = get_vehicle_data()
+    vehicle_data = get_vehicle_data("CV")
     page.get_by_role("textbox").first.fill(vehicle_data["vehicle_reg_no"])
 
     #---- Place of Use ----
@@ -39,7 +39,7 @@ def test_tipuat_motor(page):
     page.locator("mat-form-field", has_text="Make").click()
     page.get_by_role("option", name="VOLVO").click()
     
-    page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-72").click()
+    page.locator("mat-form-field", has_text="Model").click()
     page.get_by_role("option", name="F16").click()
 
     page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-74").click()
@@ -94,15 +94,14 @@ def test_tipuat_motor(page):
     page.locator("mat-form-field").filter(has_text="Business Registration # *").locator("#id").fill(vehicle_data["mykad"])
 
     page.locator("dx-input").filter(has_text="* Name as per ID / Legal Name").locator("#legalName").click()
-    page.locator("dx-input").filter(has_text="* Name as per ID / Legal Name").locator("#legalName").fill("CV C")
+    page.locator("dx-input").filter(has_text="* Name as per ID / Legal Name").locator("#legalName").fill("CV C Permit")
     
     page.get_by_role("button", name="search Validate Owner as per").click()
 
     page.get_by_role("button", name="Save & Next").click()
 
 
-    yes_btn = page.get_by_role("button", name="Yes")
-    state_dd = page.locator(".mat-select-placeholder").first
+    page.get_by_role("button", name="Yes").click()
 
     page.wait_for_timeout(1000)
 
@@ -133,7 +132,7 @@ def test_tipuat_motor(page):
     manager_context = browser.new_context()
     manager_page = manager_context.new_page()
 
-    page.goto(f"https://agent-uat.tuneinsurance.com/#/qms/quote/motor/rcv/cover-details?edit=true&quoteNr={quote_number}")
+    manager_page.goto(f"https://agent-uat.tuneinsurance.com/#/qms/quote/motor/rcv/cover-details?edit=true&quoteNr={quote_number}")
 
     manager_page.get_by_role("textbox", name="Username or email").fill("rahul@serole.com")
     manager_page.get_by_role("textbox", name="Password").fill("Serole@321")

@@ -3,7 +3,7 @@ from conftest import page
 from excel_utils import get_vehicle_data
 from datetime import datetime
 
-from base_login import cv_moto, login, navigation, cv_moto
+from base_login import cv_moto, login, navigation
 
 
 def test_tipuat_motor(page):

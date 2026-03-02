@@ -14,7 +14,7 @@ def test_uat_motor(page):
     # ========= FIRST SCREEN ===========
     
     # ---- VEHICLE REG ----
-    vehicle_data = get_vehicle_data()
+    vehicle_data = get_vehicle_data("PC")
     page.get_by_role("textbox").first.fill(vehicle_data["vehicle_reg_no"])
 
     #---- Place of Use ----

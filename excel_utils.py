@@ -11,7 +11,7 @@ def get_vehicle_data(vehicle_type):
     cell_map = {
         "CV": ("A17", "B17"),
         "MC": ("A18", "B18"),
-        "PC": ("A6", "B6"),
+        "PC": ("A6", "B7"),
     }
 
     reg_cell, mykad_cell = cell_map[vehicle_type]

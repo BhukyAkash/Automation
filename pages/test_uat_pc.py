@@ -5,7 +5,7 @@ from datetime import datetime
 from base_login import login, navigation, pc_moto
 
 
-def test_uat_motor(page):
+def test_pc_motor(page):
     
     login(page)
     navigation(page)

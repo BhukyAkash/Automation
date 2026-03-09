@@ -1,0 +1,48 @@
+========================Installation================================
+
+1. Install VS Code
+2. Install Python through MS Store
+3. mkdir playwright-python
+   cd playwright-python
+and also crate "tests" folder
+
+In "playwright-python" folder create environment
+4. For Environment
+  --------> python -m venv venv
+
+5. To Activate
+  --------> venv\Scripts\activate
+
+6. pytest installation
+  --------> python -m pip install pytest
+
+7. Version
+  --------> python -m pytest --version
+
+8. Playwright Installation
+  --------> python -m pip install playwright
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

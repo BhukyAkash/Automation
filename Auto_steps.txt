@@ -35,8 +35,8 @@ cd pages
 
 12. Run Command
   -------->
-python -m test_cv.py
-python -m test_uat_pc.py
+python -m pytest -s test_cv.py
+python -m pytest -s test_uat_pc.py
 
 13. For Traces
  -------->

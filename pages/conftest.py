@@ -5,13 +5,9 @@ import os
 
 @pytest.fixture(scope="function")
 def page(request):
-    # Base traces directory
     os.makedirs("traces", exist_ok=True)
 
-    # 🔹 Get test file name (without .py)
     test_file = os.path.splitext(os.path.basename(request.node.fspath))[0]
-
-    # 🔹 Trace path per test file
     trace_path = os.path.abspath(f"traces/{test_file}.zip")
 
     print(f"\n[TRACE] Saving trace to: {trace_path}")
@@ -20,7 +16,6 @@ def page(request):
         browser = playwright.firefox.launch(headless=False)
         context = browser.new_context()
 
-        # ---------- START TRACE ----------
         context.tracing.start(
             screenshots=True,
             snapshots=True,
@@ -30,10 +25,25 @@ def page(request):
         page = context.new_page()
         yield page
 
-        # ---------- STOP TRACE (overwrite per file) ----------
         context.tracing.stop(path=trace_path)
 
-        context.clear_cookies()   # 👈 forces logout
+        context.clear_cookies()
         context.close()
         browser.close()
-        
+
+
+# -------- Screenshot if test fails --------
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.when == "call" and report.failed:
+        page = item.funcargs.get("page", None)
+
+        if page:
+            os.makedirs("screenshots", exist_ok=True)
+            screenshot_path = f"screenshots/{item.name}.png"
+            page.screenshot(path=screenshot_path)
+            print(f"\n[SCREENSHOT] Saved to: {screenshot_path}")

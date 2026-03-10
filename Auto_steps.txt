@@ -1,4 +1,4 @@
-========================Installation================================
+======================= Installation ===============================
 
 1. Install VS Code
 2. Install Python through MS Store

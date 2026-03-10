@@ -152,12 +152,12 @@ def test_cv_motor(page):
 
     manager_page.close()
 
-'''
+
             # ====== BACK TO ORIGINAL SESSION (TPM AGENT) =====
     page.wait_for_timeout(10000)
     page.reload()
     page.wait_for_load_state("networkidle")
-
+'''
     #---------- POLICY ISSUANCE ----------
     page.get_by_role("button", name="Issue Policy").click()
 

@@ -11,7 +11,9 @@ In "playwright-python" folder create environment
   --------> python -m venv venv
 
 5. To Activate
-  --------> venv\Scripts\activate
+  --------> 
+venv\Scripts\activate
+cd pages
 
 6. pytest installation
   --------> python -m pip install pytest
@@ -22,8 +24,23 @@ In "playwright-python" folder create environment
 8. Playwright Installation
   --------> python -m pip install playwright
 
+9. playwright Browsers Installation
+  --------> python -m playwright install
 
-  
+10. Install Pytest Playwright Plugin
+  --------> python -m pip install pytest-playwright
+
+11. For Excel readable
+  --------> python -m pip install openpyxl
+
+12. Run Command
+  -------->
+python -m test_cv.py
+python -m test_uat_pc.py
+
+13. For Traces
+ -------->
+python -m playwright show-trace traces/test_cv.zip
 
 
 

@@ -1,7 +1,11 @@
 # Python
 __pycache__/
 *.pyc
-result.txt
 screenshots/
+result.txt
 downloads/
+create_doc.py
+test_sit_pc.py
+test_pa.py
+
 

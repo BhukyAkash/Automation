@@ -41,7 +41,7 @@ def test_PA(page):
 
         #page.get_by_role("button", name="Add").first.click()
 
-        # ---- STATE ----
+        '''# ---- STATE ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Johor").click()
         page.wait_for_timeout(5000)
@@ -54,7 +54,7 @@ def test_PA(page):
         # ---- STREET ADDRESS ----
         page.locator(".mat-select-placeholder").click()
         page.get_by_role("option", name="Desa Harmoni", exact=True).click()
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(2000)'''
 
         # ---- CONTACT DETAILS ----
         page.get_by_role("textbox", name="123456789").fill("123456789")
@@ -94,9 +94,14 @@ def test_PA(page):
         page.get_by_role("button", name="Issue Policy").click()
         page.get_by_role("button", name="Accept & Proceed").click()
 
+        page.wait_for_timeout(15000)
+        page.reload()
+
         # ---- Download the policy schedule ----
         page.get_by_role("button", name="Download & e-mail Policy").click()
         page.get_by_text("Download Policy Schedule").click()
+
+        page.wait_for_timeout(10000)
 
         with page.expect_download() as download_info:
             page.get_by_role("button", name="Download").click()

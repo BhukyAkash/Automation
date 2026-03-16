@@ -37,10 +37,12 @@ cd pages
   -------->
 python -m pytest -s test_cv.py
 python -m pytest -s test_uat_pc.py
+python -m pytest -s test_pa.py
 
 13. For Traces
  -------->
 python -m playwright show-trace traces/test_cv.zip
+python -m playwright show-trace traces/test_pa.zip
 
 
 

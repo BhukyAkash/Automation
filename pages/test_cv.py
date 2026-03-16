@@ -93,11 +93,10 @@ def test_cv_motor(page):
         # ---- Get Quote Number ----
         quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
         quote_number = quote_text.strip()
-
         print("Quote Number:", quote_number)
 
+        #--------- SUBMIT FOR APPROVAL ---------
         page.get_by_role("button", name="Submit for TPM Staff Approval").click()
-
         page.wait_for_timeout(17000)
 
         # ===== INCOGNITO SESSION (Branch Manager) =====
@@ -107,7 +106,6 @@ def test_cv_motor(page):
         manager_page = manager_context.new_page()
 
         manager_page.goto(f"https://agent-uat.tuneinsurance.com/#/qms/quote/motor/rcv/cover-details?edit=true&quoteNr={quote_number}")
-
         manager_page.get_by_role("textbox", name="Username or email").fill("rahul@serole.com")
         manager_page.get_by_role("textbox", name="Password").fill("Serole@321")
         manager_page.get_by_role("button", name="Login").click()
@@ -115,8 +113,8 @@ def test_cv_motor(page):
         manager_page.wait_for_timeout(20000)
         manager_page.reload()
 
+        # --------- APPROVE THE QUOTE ---------
         manager_page.get_by_role("button", name="Accept & Process").click()
-
         manager_page.close()
 
         # ===== BACK TO ORIGINAL SESSION =====
@@ -137,6 +135,7 @@ def test_cv_motor(page):
         
         #----Printing the policy number---
         policy_locator = page.locator("text=Policy #:")
+        policy_locator.wait_for()
         policy_text = policy_locator.text_content()
         policy_number = policy_text.replace("Policy #:", "").strip()
         print("Policy Number:", policy_number)

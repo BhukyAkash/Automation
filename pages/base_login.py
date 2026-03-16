@@ -10,13 +10,6 @@ def navigation(page):
     page.get_by_role("button", name="New Quote").click()
     page.get_by_role("heading", name="Motor").click()
 
-def navi_pa(page):
-    page.get_by_text("request_quote QMS Quotation").click()
-    page.get_by_role("button", name="New Quote").click()
-    page.get_by_role("heading", name="Accident & Health").click()
-    page.get_by_role("heading", name="Personal Accident").click()
-    page.get_by_role("button", name="Next").click()
-
 def pc_moto(page):
     # === for Private car & Motorcycle ====
     page.get_by_role("heading", name="Reg. Motorcar/Motorcycle").click()
@@ -28,5 +21,12 @@ def cv_moto(page):
     page.get_by_role("heading", name="Reg. Commercial Vehicle").click()
     page.get_by_role("button", name="Next").click()
     page.get_by_role("textbox").click()
+    
+def navi_pa(page):
+    page.get_by_text("request_quote QMS Quotation").click()
+    page.get_by_role("button", name="New Quote").click()
+    page.get_by_role("heading", name="Accident & Health").click()
+    page.get_by_role("heading", name="Personal Accident").click()
+    page.get_by_role("button", name="Next").click()
 
     

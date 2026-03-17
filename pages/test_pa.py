@@ -21,7 +21,7 @@ def test_PA(page):
 
         # ---- INTERNAL CLASSIFICATION ----
         page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="Class 1").click()
+        page.get_by_role("option", name="Class 2").click()
 
         # ---- PLAN TYPE ----
         page.locator(".mat-select-placeholder").click()
@@ -36,6 +36,7 @@ def test_PA(page):
 
         # ---- SAVE & NEXT ----
         page.get_by_role("button", name="Save & Next").click()
+        page.wait_for_timeout(10000)
 
         # ========== SECOND SCREEN ==========
 
@@ -56,6 +57,8 @@ def test_PA(page):
         page.get_by_role("combobox", name="Address Line").click()
         page.get_by_role("option", name="Desa Harmoni", exact=True).click()
         page.wait_for_timeout(2000)
+
+        page.get_by_role("button", name="Save").click()
 
         # ---- CONTACT DETAILS ----
         page.get_by_role("textbox", name="123456789").fill("123456789")
@@ -120,18 +123,32 @@ def test_PA(page):
 
         # ------- SAVE TO EXCEL -------
         import os
+        from openpyxl import Workbook, load_workbook
+
         file_path = "UATStability.xlsx"
 
+        # Load or create workbook
         if os.path.exists(file_path):
             wb = load_workbook(file_path)
+            ws = wb.active
         else:
             wb = Workbook()
+            ws = wb.active
 
-        ws = wb.active
+        # ---- Find next empty row based on Column D (Motor Type) ----
+        row = 2  # start after header
+        while ws.cell(row=row, column=4).value:
+            row += 1
 
-        # PA values
-        ws["F5"] = quote_number
-        ws["G5"] = policy_number
+        # ---- Policy Type ----
+        policy_type = "PA"   # change to MC / CV / PC in other scripts
+
+        # ---- Write data ----
+        ws.cell(row=row, column=4).value = policy_type      # Column D
+        ws.cell(row=row, column=6).value = quote_number     # Column F
+        ws.cell(row=row, column=7).value = policy_number    # Column G
+
+        # ---- Save file ----
         wb.save(file_path)
 
     finally:

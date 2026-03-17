@@ -144,19 +144,31 @@ def test_cv_motor(page):
         # ---------- SAVE TO EXCEL ----------
 
         import os
+        from openpyxl import Workbook, load_workbook
+
         file_path = "UATStability.xlsx"
 
+        # Load or create workbook
         if os.path.exists(file_path):
             wb = load_workbook(file_path)
+            ws = wb.active
         else:
             wb = Workbook()
+            ws = wb.active
 
-        ws = wb.active
+        # ---- Find next empty row based on Column D (Motor Type) ----
+        row = 2  # start after header
+        while ws.cell(row=row, column=4).value:
+            row += 1
 
-        # CV values
-        ws["F4"] = quote_number
-        ws["G4"] = policy_number
+        # ---- Policy Type ----
+        policy_type = "CV"
 
+        # ---- Write data ----
+        ws.cell(row=row, column=4).value = policy_type
+        ws.cell(row=row, column=6).value = quote_number
+        ws.cell(row=row, column=7).value = policy_number
+        # ---- Save file ----
         wb.save(file_path)
 
     finally:

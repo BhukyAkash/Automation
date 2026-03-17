@@ -24,12 +24,14 @@ def test_cv_motor(page):
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Commercial Vehicle").click()
 
+        # ---- VEHICLE USE ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="C permit").click()
 
         page.locator("mat-form-field").filter(has_text="Engine # *").locator("#engineNo").fill("63547")
         page.locator("mat-form-field").filter(has_text="Chassis # *").locator("#chassisNo").fill("34576657")
 
+        # ---- MAKE & MODEL ----
         page.locator("mat-form-field", has_text="Make").click()
         page.get_by_role("option", name="VOLVO").click()
 
@@ -39,6 +41,7 @@ def test_cv_motor(page):
         page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-74").click()
         page.get_by_role("option", name="2016").click()
 
+        # ---- VARIANT ----
         page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-76").click()
         page.get_by_role("option", name="NA").click()
 
@@ -59,6 +62,7 @@ def test_cv_motor(page):
         page.locator("#mat-select-value-31").click()
         page.get_by_role("option", name="Comprehensive").click()
 
+        # ---- INCEPTION DATE (Today's date) ----
         today = datetime.today()
         aria_date = today.strftime("%B %d, %Y").replace(" 0", " ")
 
@@ -69,11 +73,14 @@ def test_cv_motor(page):
 
         page.get_by_role("gridcell", name=aria_date).click()
 
+        # ----- SUM INSURED ----
         page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").click()
         page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").fill("45000")
 
+        # ---- BUSINESS REGISTRATION NUMBER ----
         page.locator("mat-form-field").filter(has_text="Business Registration # *").locator("#id").fill(vehicle_data["mykad"])
 
+        # ---- NAME AS PER ID / LEGAL NAME ----
         page.locator("dx-input").filter(has_text="* Name as per ID / Legal Name").locator("#legalName").fill("CV C Permit")
 
         page.get_by_role("button", name="search Validate Owner as per").click()
@@ -123,7 +130,7 @@ def test_cv_motor(page):
         page.reload()
         page.wait_for_load_state("networkidle")
 
-        #---------- POLICY ISSUANCE ----------
+        # ------- POLICY ISSUANCE -------
         page.get_by_role("button", name="Issue Policy").click()
 
         page.wait_for_timeout(30000)
@@ -133,7 +140,7 @@ def test_cv_motor(page):
         page.wait_for_timeout(20000)
 
         
-        #----Printing the policy number---
+        # ---- Printing the policy number ---
         policy_locator = page.locator("text=Policy #:")
         policy_locator.wait_for()
         policy_text = policy_locator.text_content()
@@ -141,7 +148,7 @@ def test_cv_motor(page):
         print("Policy Number:", policy_number)
 
 
-        # ---------- SAVE TO EXCEL ----------
+        # --------- SAVE TO EXCEL ---------
 
         import os
         from openpyxl import Workbook, load_workbook

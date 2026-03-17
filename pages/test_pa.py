@@ -13,7 +13,7 @@ def test_PA(page):
 
         # ---- MYKAD ID ----
         page.locator("#dx-input-0").nth(1).click()
-        page.locator("#dx-input-0").nth(1).fill("900506-12-1232")
+        page.locator("#dx-input-0").nth(1).fill("920506-12-1232")
 
         # ---- PH NAME ----
         page.locator("#dx-input-1").nth(1).click()
@@ -39,9 +39,10 @@ def test_PA(page):
 
         # ========== SECOND SCREEN ==========
 
-        #page.get_by_role("button", name="Add").first.click()
+        page.get_by_role("button", name="Add").first.click()
+        page.wait_for_timeout(3000)
 
-        '''# ---- STATE ----
+        # ---- STATE ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Johor").click()
         page.wait_for_timeout(5000)
@@ -52,9 +53,9 @@ def test_PA(page):
         page.wait_for_timeout(3000)
 
         # ---- STREET ADDRESS ----
-        page.locator(".mat-select-placeholder").click()
+        page.get_by_role("combobox", name="Address Line").click()
         page.get_by_role("option", name="Desa Harmoni", exact=True).click()
-        page.wait_for_timeout(2000)'''
+        page.wait_for_timeout(2000)
 
         # ---- CONTACT DETAILS ----
         page.get_by_role("textbox", name="123456789").fill("123456789")

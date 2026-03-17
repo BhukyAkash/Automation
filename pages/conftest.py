@@ -31,7 +31,7 @@ def page(request):
         context.close()
         browser.close()
 
-
+'''
 # -------- Screenshot if test fails --------
 
 @pytest.hookimpl(hookwrapper=True)
@@ -46,4 +46,4 @@ def pytest_runtest_makereport(item, call):
             os.makedirs("screenshots", exist_ok=True)
             screenshot_path = f"screenshots/{item.name}.png"
             page.screenshot(path=screenshot_path)
-            print(f"\n[SCREENSHOT] Saved to: {screenshot_path}")
+            print(f"\n[SCREENSHOT] Saved to: {screenshot_path}")'''

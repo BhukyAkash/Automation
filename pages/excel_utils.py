@@ -9,7 +9,7 @@ def get_vehicle_data(vehicle_type):
     sheet = wb.active
 
     cell_map = {
-        "CV": ("A18", "B18"),
+        "CV": ("A20", "B20"),
         "MC": ("A10", "B10"),
         "PC": ("A5", "B5"),
     }

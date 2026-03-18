@@ -15,6 +15,7 @@ def test_cv_motor(page):
 
         vehicle_data = get_vehicle_data("CV")
         page.get_by_role("textbox").first.fill(vehicle_data["vehicle_reg_no"])
+        print("Registration Number:", vehicle_data["vehicle_reg_no"])
 
         page.locator(".mat-select-placeholder").click()
         page.get_by_role("option", name="Johor").click()
@@ -79,30 +80,41 @@ def test_cv_motor(page):
 
         # ---- BUSINESS REGISTRATION NUMBER ----
         page.locator("mat-form-field").filter(has_text="Business Registration # *").locator("#id").fill(vehicle_data["mykad"])
+        print("MyKad Number:", vehicle_data["mykad"])
 
         # ---- NAME AS PER ID / LEGAL NAME ----
         page.locator("dx-input").filter(has_text="* Name as per ID / Legal Name").locator("#legalName").fill("CV C Permit")
 
         page.get_by_role("button", name="search Validate Owner as per").click()
+        page.screenshot(path="screenshots/NCD_Confirmation.png", timeout=0, animations="disabled")
 
         page.get_by_role("button", name="Save & Next").click()
+        print("Registration Number is Triggered to ISM")
+
+        page.wait_for_timeout(5000)
         
 
         # ========== THIRD SCREEN ==========
 
         page.get_by_role("button", name="Yes").click()
 
-        page.wait_for_timeout(1000)
+        '''page.locator(".mat-select-placeholder").first.click()
+        page.get_by_role("option", name="Johor").click()
+        page.locator(".mat-select-placeholder").click()
+        page.get_by_role("option", name="81100").click()
+        page.get_by_role("combobox", name="Address Line").click()
+        page.get_by_role("option", name="Desa Harmoni", exact=True).click()'''
 
-        page.locator("#dx-checkbox-3 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
-        page.locator("#dx-checkbox-4 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
+        # ---- DECLARATION STATEMENTS ----
+        page.get_by_text("We respect your privacy and").click()
+        page.get_by_text("I hereby confirm that I have").click()
 
         # ---- Get Quote Number ----
         quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
         quote_number = quote_text.strip()
         print("Quote Number:", quote_number)
 
-        #--------- SUBMIT FOR APPROVAL ---------
+        # -------- SUBMIT FOR APPROVAL ---------
         page.get_by_role("button", name="Submit for TPM Staff Approval").click()
         page.wait_for_timeout(17000)
 
@@ -120,15 +132,26 @@ def test_cv_motor(page):
         manager_page.wait_for_timeout(20000)
         manager_page.reload()
 
-        # --------- APPROVE THE QUOTE ---------
+        # ---- APPROVE THE QUOTE ----
         manager_page.get_by_role("button", name="Accept & Process").click()
         manager_page.close()
 
-        # ===== BACK TO ORIGINAL SESSION =====
+        # ======= BACK TO ORIGINAL SESSION =======
 
         page.wait_for_timeout(10000)
-        page.reload()
-        page.wait_for_load_state("networkidle")
+        '''page.reload()
+        page.wait_for_load_state("networkidle")'''
+
+        page.get_by_role("button", name="Back").click()
+        page.get_by_role("button", name="Generate Quote").click()
+        page.wait_for_timeout(5000)
+
+        with page.expect_download() as download_info:
+            page.get_by_role("button", name="Submit").click()
+        download = download_info.value
+        download.save_as("downloads/CV_quote.pdf")
+
+        page.get_by_role("button", name="Proceed to Policy Issuance").click()
 
         # ------- POLICY ISSUANCE -------
         page.get_by_role("button", name="Issue Policy").click()
@@ -139,13 +162,22 @@ def test_cv_motor(page):
 
         page.wait_for_timeout(20000)
 
-        
         # ---- Printing the policy number ---
         policy_locator = page.locator("text=Policy #:")
         policy_locator.wait_for()
         policy_text = policy_locator.text_content()
         policy_number = policy_text.replace("Policy #:", "").strip()
         print("Policy Number:", policy_number)
+
+
+        # ---- Download the policy schedule ----
+        page.get_by_role("button", name="Download & e-mail Policy").click()
+        page.wait_for_timeout(5000)
+
+        with page.expect_download() as download_info:
+            page.get_by_role("button", name="Submit").click()
+        download = download_info.value
+        download.save_as("downloads/CV_policy.pdf")
 
 
         # --------- SAVE TO EXCEL ---------

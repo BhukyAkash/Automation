@@ -1,5 +1,7 @@
 from openpyxl import Workbook, load_workbook
 from base_login import login, navi_pa
+from test_mail import send_email, send_failure_email
+from datetime import datetime
 
 def test_PA(page):
 
@@ -13,7 +15,7 @@ def test_PA(page):
 
         # ---- MYKAD ID ----
         page.locator("#dx-input-0").nth(1).click()
-        page.locator("#dx-input-0").nth(1).fill("920506-12-1232")
+        page.locator("#dx-input-0").nth(1).fill("980506-12-1232")
 
         # ---- PH NAME ----
         page.locator("#dx-input-1").nth(1).click()
@@ -82,6 +84,7 @@ def test_PA(page):
         
         # ---- GENERATE & DOWNLOAD QUOTE -----
         page.get_by_role("button", name="Generate Quote").click()
+        
         page.wait_for_timeout(10000)
 
         page.get_by_role("button", name="Download Quote & PDS Documents").click()
@@ -91,12 +94,15 @@ def test_PA(page):
             page.get_by_role("button", name="Download").click()
         download = download_info.value
         download.save_as("downloads/PA_quote.pdf")
+        page.get_by_text("close", exact=True).click()
+        print("Quote Generated successfully")
 
         page.wait_for_timeout(10000)
 
         # ---- ISSUE POLICY & DOWNLOAD POLICY SCHEDULE ----
         page.get_by_role("button", name="Issue Policy").click()
         page.get_by_role("button", name="Accept & Proceed").click()
+        print("Policy Issued successfully")
 
         page.wait_for_timeout(15000)
         page.reload()
@@ -111,6 +117,9 @@ def test_PA(page):
             page.get_by_role("button", name="Download").click()
         download = download_info.value
         download.save_as("downloads/PA_policy.pdf")
+        page.get_by_text("close", exact=True).click()
+
+        print("Policy Schedule downloaded successfully")
 
         # ---- Printing the policy number ----
         policy_locator = page.locator("text=Policy #:")
@@ -141,15 +150,28 @@ def test_PA(page):
             row += 1
 
         # ---- Policy Type ----
-        policy_type = "PA"   # change to MC / CV / PC in other scripts
+        policy_type = "PA"
+        inception_date_excel = datetime.today().strftime("%d-%m-%Y")
 
         # ---- Write data ----
         ws.cell(row=row, column=4).value = policy_type      # Column D
         ws.cell(row=row, column=6).value = quote_number     # Column F
         ws.cell(row=row, column=7).value = policy_number    # Column G
+        ws.cell(row=row, column=8).value = inception_date_excel
 
         # ---- Save file ----
         wb.save(file_path)
+
+
+        # ---- SEND EMAIL ----
+        send_email()
+
+
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        send_failure_email(error_details)
+        raise
 
     finally:
         page.wait_for_timeout(15000)

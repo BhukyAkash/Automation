@@ -2,6 +2,7 @@ from openpyxl import Workbook, load_workbook
 from excel_utils import get_vehicle_data
 from datetime import datetime
 from base_login import login, navigation, cv_moto
+from test_mail import send_email
 
 
 def test_cv_motor(page):
@@ -203,12 +204,19 @@ def test_cv_motor(page):
         # ---- Policy Type ----
         policy_type = "CV"
 
+        inception_date_excel = today.strftime("%d-%m-%Y")
+
         # ---- Write data ----
         ws.cell(row=row, column=4).value = policy_type
         ws.cell(row=row, column=6).value = quote_number
         ws.cell(row=row, column=7).value = policy_number
+        ws.cell(row=row, column=8).value = inception_date_excel
+
         # ---- Save file ----
         wb.save(file_path)
+
+        # -------- SEND EMAIL ---------
+        send_email()
 
     finally:
         page.get_by_text("playwright", exact=True).click()

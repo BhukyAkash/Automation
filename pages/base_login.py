@@ -28,5 +28,3 @@ def navi_pa(page):
     page.get_by_role("heading", name="Accident & Health").click()
     page.get_by_role("heading", name="Personal Accident").click()
     page.get_by_role("button", name="Next").click()
-
-    

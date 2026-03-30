@@ -1,6 +1,7 @@
+import os
 from openpyxl import Workbook, load_workbook
 from base_login import login, navi_pa
-from test_mail import send_email, send_failure_email
+from test_mail import send_email
 from datetime import datetime
 
 def test_PA(page):
@@ -15,7 +16,7 @@ def test_PA(page):
 
         # ---- MYKAD ID ----
         page.locator("#dx-input-0").nth(1).click()
-        page.locator("#dx-input-0").nth(1).fill("980506-12-1232")
+        page.locator("#dx-input-0").nth(1).fill("860806-12-1232")
 
         # ---- PH NAME ----
         page.locator("#dx-input-1").nth(1).click()
@@ -24,6 +25,12 @@ def test_PA(page):
         # ---- INTERNAL CLASSIFICATION ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Class 2").click()
+
+        # ---- PRODUCT SELECTION ----
+        page.locator("[formcontrolname='paProducts']").click()
+        page.get_by_role("option", name="Personal Accident Safe").click()
+        #page.get_by_role("option", name="PA Shield").click()
+
 
         # ---- PLAN TYPE ----
         page.locator(".mat-select-placeholder").click()
@@ -42,25 +49,31 @@ def test_PA(page):
 
         # ========== SECOND SCREEN ==========
 
-        page.get_by_role("button", name="Add").first.click()
-        page.wait_for_timeout(3000)
+        # ---- CHECK IF ADDRESS ALREADY EXISTS ----
+        add_button = page.get_by_role("button", name="Add").first
+
+        if add_button.is_visible():
+            add_button.click()
+            page.wait_for_timeout(3000)
 
         # ---- STATE ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Johor").click()
-        page.wait_for_timeout(5000)
+        page.wait_for_timeout(3000)
 
         # ---- PINCODE ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="81100").click()
-        page.wait_for_timeout(3000)
+        page.wait_for_timeout(2000)
 
         # ---- STREET ADDRESS ----
         page.get_by_role("combobox", name="Address Line").click()
-        page.get_by_role("option", name="Desa Harmoni", exact=True).click()
+        page.get_by_role("option", name="Taman Desa Harmoni", exact=True).click()
         page.wait_for_timeout(2000)
 
-        page.get_by_role("button", name="Save").click()
+        #page.get_by_role("button", name="Save").click()
+
+        page.locator("//label[@for='2']//div[@class='box-card d-flex align-items-center gap-2 px-2 py-1']").click()
 
         # ---- CONTACT DETAILS ----
         page.get_by_role("textbox", name="123456789").fill("123456789")
@@ -83,9 +96,8 @@ def test_PA(page):
         print("Quote Number:", quote_number)
         
         # ---- GENERATE & DOWNLOAD QUOTE -----
-        page.get_by_role("button", name="Generate Quote").click()
-        
-        page.wait_for_timeout(10000)
+        page.get_by_role("button", name="Generate Quote").wait_for()
+    
 
         page.get_by_role("button", name="Download Quote & PDS Documents").click()
         page.locator("form").get_by_text("Download Quote & PDS Documents").click()
@@ -131,8 +143,6 @@ def test_PA(page):
 
 
         # ------- SAVE TO EXCEL -------
-        import os
-        from openpyxl import Workbook, load_workbook
 
         file_path = "UATStability.xlsx"
 
@@ -165,13 +175,6 @@ def test_PA(page):
 
         # ---- SEND EMAIL ----
         send_email()
-
-
-    except Exception as e:
-        import traceback
-        error_details = traceback.format_exc()
-        send_failure_email(error_details)
-        raise
 
     finally:
         page.wait_for_timeout(15000)

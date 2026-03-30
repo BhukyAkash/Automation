@@ -36,6 +36,7 @@ cd pages
 12. Run Command
   -------->
 python -m pytest -s test_cv.py
+pytest -s test_mc.py
 python -m pytest -s test_uat_pc.py
 python -m pytest -s test_pa.py
 
@@ -43,6 +44,16 @@ python -m pytest -s test_pa.py
  -------->
 python -m playwright show-trace traces/test_cv.zip
 python -m playwright show-trace traces/test_pa.zip
+
+
+Code Generation
+  --------> playwright codegen https://tune.sit.indigit.io/#/home#Apps
+  --------> playwright codegen --browser=firefox https://tune.sit.indigit.io/#/home#Agent%20Dashboard
+  --------> playwright codegen --browser=firefox https://agent-uat.tuneinsurance.com/#/home#QMS%20Agent
+  --------> python -m playwright codegen --browser=firefox https://tus4appsit.tuneprotect.com:44300/sap/bc/ui2/flp#Shell-home
+  --------> python -m playwright codegen --browser=firefox https://tus4appuat.tuneprotect.com:44303/sap/bc/ui2/flp#Shell-home
+  --------> python -m playwright codegen --browser=firefox https://tupqmdbsit.tuneprotect.com:10002/sap/bc/ui2/flp#Shell-home
+  
 
 
 

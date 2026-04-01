@@ -1,3 +1,4 @@
+import os
 from openpyxl import Workbook, load_workbook
 from excel_utils import get_vehicle_data
 from datetime import datetime
@@ -48,7 +49,7 @@ def test_cv_motor(page):
         page.get_by_role("option", name="NA").click()
 
         page.locator("mat-form-field").filter(has_text="Seating Capacity *").locator("#seatCapacity").fill("5")
-        page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("11")
+        page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("5")
 
         page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-84").click()
         page.get_by_role("option", name="Tonnes").click()
@@ -77,7 +78,7 @@ def test_cv_motor(page):
 
         # ----- SUM INSURED ----
         page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").click()
-        page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").fill("45000")
+        page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").fill("200000")
 
         # ---- BUSINESS REGISTRATION NUMBER ----
         page.locator("mat-form-field").filter(has_text="Business Registration # *").locator("#id").fill(vehicle_data["mykad"])
@@ -87,24 +88,55 @@ def test_cv_motor(page):
         page.locator("dx-input").filter(has_text="* Name as per ID / Legal Name").locator("#legalName").fill("CV C Permit")
 
         page.get_by_role("button", name="search Validate Owner as per").click()
-        page.screenshot(path="screenshots/NCD_Confirmation.png", timeout=0, animations="disabled")
 
+        # ---- NCD value ----
+        page.wait_for_timeout(7000)
+        ncd_value = page.locator("#currentNCD input.mat-input-element").input_value()
+        print("NCD Value:", ncd_value)
+        
+        # --- SAVE & NEXT BUTTON ----
         page.get_by_role("button", name="Save & Next").click()
         print("Registration Number is Triggered to ISM")
 
         page.wait_for_timeout(5000)
         
 
-        # ========== THIRD SCREEN ==========
+        # ========== THIRD SCREEN ==== PH Details ======
 
-        page.get_by_role("button", name="Yes").click()
+        # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
+        yes_button = page.get_by_role("button", name="Yes").first
 
-        '''page.locator(".mat-select-placeholder").first.click()
+        if yes_button.is_visible():
+                yes_button.click()
+                page.wait_for_timeout(1000)
+
+        # ---- CHECK IF ADDRESS ALREADY EXISTS ----
+        add_button = page.locator("button[name='Add'], button:has-text('Add')").first
+        if add_button.is_visible():
+            add_button.click()
+            page.wait_for_timeout(1000)
+
+        # ---- STATE ---- (runs for both cases)
+        page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Johor").click()
-        page.locator(".mat-select-placeholder").click()
+        page.wait_for_timeout(5000)
+
+        # ---- PINCODE ----
+        page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="81100").click()
+        page.wait_for_timeout(2000)
+
+        # ---- STREET ADDRESS ----
         page.get_by_role("combobox", name="Address Line").click()
-        page.get_by_role("option", name="Desa Harmoni", exact=True).click()'''
+        page.get_by_role("option", name="Taman Desa Harmoni", exact=True).click()
+        page.wait_for_timeout(2000)
+
+        # ---- SAVE BUTTON (if address is added) ----
+        address_save = page.locator("button#save")
+        if address_save.is_visible():
+            address_save.click()
+            page.locator("//label[@for='2']//div[@class='box-card justify-content-between']").wait_for(state="visible")
+            page.locator("//label[@for='2']//div[@class='box-card justify-content-between']").click()
 
         # ---- DECLARATION STATEMENTS ----
         page.get_by_text("We respect your privacy and").click()
@@ -182,10 +214,7 @@ def test_cv_motor(page):
 
 
         # --------- SAVE TO EXCEL ---------
-
-        import os
-        from openpyxl import Workbook, load_workbook
-
+        
         file_path = "UATStability.xlsx"
 
         # Load or create workbook

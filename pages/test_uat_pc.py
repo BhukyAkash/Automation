@@ -1,8 +1,9 @@
-from conftest import page
+import os
+from openpyxl import Workbook, load_workbook
 from excel_utils import get_vehicle_data
 from datetime import datetime
-
 from base_login import login, navigation, pc_moto
+from pages.test_mail import send_email
 
 
 def test_pc_motor(page):
@@ -64,31 +65,70 @@ def test_pc_motor(page):
         page.locator("mat-form-field").filter(has_text="Name as per ID *").locator("#legalName").fill("PC")
         page.get_by_role("button", name="search Validate Owner as per").click()
 
+        # ---- NCD value ----
+        page.wait_for_timeout(7000)
+        ncd_value = page.locator("#currentNCD input.mat-input-element").input_value()
+        print("NCD Value:", ncd_value)
+
         #---- SAVE & NEXT BUTTON -----
         page.get_by_role("button", name="Save & Next").click()
 
 
         # ========== THIRD SCREEN === COVER DETAILS ==========
 
+        # ---- DRIVER EXPERIENCE ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Less than 2 years").click()
 
-        page.get_by_role("button", name="Yes").click()
+        # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
+        yes_button = page.get_by_role("button", name="Yes").first
+
+        if yes_button.is_visible():
+                yes_button.click()
+                page.wait_for_timeout(1000)
+
+        # ---- CHECK IF ADDRESS ALREADY EXISTS ----
+        add_button = page.locator("button[name='Add'], button:has-text('Add')").first
+        if add_button.is_visible():
+            add_button.click()
+            page.wait_for_timeout(1000)
+
+        # ---- STATE ---- (runs for both cases)
+        page.locator(".mat-select-placeholder").first.click()
+        page.get_by_role("option", name="Johor").click()
+        page.wait_for_timeout(5000)
+
+        # ---- PINCODE ----
+        page.locator(".mat-select-placeholder").first.click()
+        page.get_by_role("option", name="81100").click()
+        page.wait_for_timeout(2000)
+
+        # ---- STREET ADDRESS ----
+        page.get_by_role("combobox", name="Address Line").click()
+        page.get_by_role("option", name="Taman Desa Harmoni", exact=True).click()
+        page.wait_for_timeout(2000)
+
+        # ---- SAVE BUTTON (if address is added) ----
+        address_save = page.locator("button#save")
+        if address_save.is_visible():
+            address_save.click()
+            page.locator("//label[@for='3']//div[@class='box-card justify-content-between']").wait_for(state="visible")
+            page.locator("//label[@for='3']//div[@class='box-card justify-content-between']").click()
+
         
+        # ---- Garage Types ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Public Road").click()
-
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="No Alarm(WITHOUT MECHANICAL").click()
-
         page.locator(".mat-select-placeholder").click()
         page.get_by_role("option", name="Driver’s Side Airbags (1)").click()
 
-        page.locator("#dx-checkbox-3 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
-        page.locator("#dx-checkbox-4 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
+        # ---- DECLARATION STATEMENTS ----
+        page.get_by_text("We respect your privacy and").click()
+        page.get_by_text("I hereby confirm that I have").click()
 
-
-        # Uploading the document
+        # ---- Uploading the document later option ----
         page.locator("#isUploadLater-desktop > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
         page.locator("dx-evidence-upload").get_by_role("textbox").click()
         page.locator("dx-evidence-upload").get_by_role("textbox").fill("Will Upload later")
@@ -145,6 +185,8 @@ def test_pc_motor(page):
         policy_number = policy_text.replace("Policy #:", "").strip()
 
         print("Policy Number:", policy_number)
+
+
 
     finally:
         page.get_by_text("playwright", exact=True).click()

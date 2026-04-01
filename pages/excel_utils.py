@@ -10,7 +10,7 @@ def get_vehicle_data(vehicle_type):
 
     cell_map = {
         "CV": ("A20", "B20"),
-        "MC": ("A29", "B29"),
+        "MC": ("A30", "B30"),
         "PC": ("A5", "B5"),
     }
 

@@ -93,7 +93,7 @@ def test_mc_motor(page):
         page.get_by_text("We respect your privacy and").click()
         page.get_by_text("I hereby confirm that I have").click()
 
-
+        # ---- GENERATE & DOWNLOAD QUOTE -----
         page.get_by_role("button", name="Generate Quote").click()
         page.wait_for_timeout(5000)
 
@@ -130,7 +130,6 @@ def test_mc_motor(page):
         download = download_info.value
         download.save_as("downloads/MC_policy.pdf")
         print("Policy is Issued and Schedule letter downloaded successfully.")
-
 
         # --------- SAVE TO EXCEL ---------
         

@@ -16,13 +16,14 @@ def test_PA(page):
 
         # ---- MYKAD ID ----
         page.locator("#dx-input-0").nth(1).click()
-        page.locator("#dx-input-0").nth(1).fill("860806-12-1232")
+        page.locator("#dx-input-0").nth(1).fill("880525028893")
 
         # ---- PH NAME ----
         page.locator("#dx-input-1").nth(1).click()
         page.locator("#dx-input-1").nth(1).fill("PERSONAL ACCIDENT")
 
         # ---- INTERNAL CLASSIFICATION ----
+        #page.locator("[formcontrolname='internalClassification']").click()
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Class 2").click()
 
@@ -31,9 +32,8 @@ def test_PA(page):
         page.get_by_role("option", name="Personal Accident Safe").click()
         #page.get_by_role("option", name="PA Shield").click()
 
-
         # ---- PLAN TYPE ----
-        page.locator(".mat-select-placeholder").click()
+        page.locator("#occupation-description").filter(has_text="Sum Insured").click()
         page.get_by_role("option", name="100,000").click()
 
         # ---- WEEKLY BENEFIT ----
@@ -49,14 +49,43 @@ def test_PA(page):
 
         # ========== SECOND SCREEN ==========
 
+
+        # ========== SCREEN 2 DEBUG ==========
+        page.wait_for_timeout(3000)
+
+        print("=== SCREEN 2 DEBUG ===")
+        print("URL:", page.url)
+        print("All buttons:")
+        for btn in page.get_by_role("button").all():
+            print(f"  BUTTON: '{btn.inner_text().strip()}'")
+
+        print("All mat-select (formcontrolname):")
+        for sel in page.locator("mat-select").all():
+            print(f"  MAT-SELECT formcontrolname: '{sel.get_attribute('formcontrolname')}'")
+
+        print("mat-select-placeholder count:", page.locator(".mat-select-placeholder").count())
+        print("Yes visible:", page.get_by_role("button", name="Yes").first.is_visible())
+        print("Add visible:", page.get_by_role("button", name="Add").first.is_visible())
+        print("=== END SCREEN 2 DEBUG ===")
+
+        # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
+        try:
+            page.get_by_role("button", name="Yes").first.wait_for(state="visible", timeout=8000)
+            page.get_by_role("button", name="Yes").first.click()
+            page.wait_for_timeout(2000)
+        except:
+            pass
+
         # ---- CHECK IF ADDRESS ALREADY EXISTS ----
-        add_button = page.get_by_role("button", name="Add").first
-
-        if add_button.is_visible():
+        add_button = page.locator("button[name='Add'], button:has-text('Add')").first
+        try:
+            add_button.wait_for(state="visible", timeout=3000)
             add_button.click()
-            page.wait_for_timeout(3000)
+            page.wait_for_timeout(2000)
+        except:
+            pass  
 
-        # ---- STATE ----
+        # ---- STATE ---- (runs for both cases)
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Johor").click()
         page.wait_for_timeout(3000)
@@ -71,9 +100,13 @@ def test_PA(page):
         page.get_by_role("option", name="Taman Desa Harmoni", exact=True).click()
         page.wait_for_timeout(2000)
 
-        #page.get_by_role("button", name="Save").click()
+        # ---- SAVE BUTTON (if address is added) ----
+        address_save = page.get_by_role("button", name="Save")
+        if address_save.is_visible():
+            address_save.click()
+            page.locator("//label[@for='3']//div[@class='box-card justify-content-between']").wait_for(state="visible")
+            page.locator("//label[@for='3']//div[@class='box-card justify-content-between']").click()
 
-        page.locator("//label[@for='2']//div[@class='box-card d-flex align-items-center gap-2 px-2 py-1']").click()
 
         # ---- CONTACT DETAILS ----
         page.get_by_role("textbox", name="123456789").fill("123456789")
@@ -86,7 +119,6 @@ def test_PA(page):
             radios.nth(i).check()
 
         # ---- Declaration Statements ----
-        page.get_by_text("1. Are any of the Insured").click()
         page.get_by_text("We respect your privacy").click()
         page.get_by_text("I hereby confirm that I have").click()
 
@@ -97,8 +129,8 @@ def test_PA(page):
         
         # ---- GENERATE & DOWNLOAD QUOTE -----
         page.get_by_role("button", name="Generate Quote").wait_for()
+        page.get_by_role("button", name="Generate Quote").click()
     
-
         page.get_by_role("button", name="Download Quote & PDS Documents").click()
         page.locator("form").get_by_text("Download Quote & PDS Documents").click()
 
@@ -120,7 +152,7 @@ def test_PA(page):
         page.reload()
 
         # ---- Download the policy schedule ----
-        page.get_by_role("button", name="Download & e-mail Policy").click()
+        page.get_by_role("button", name="Download & Email Policy").click()
         page.get_by_text("Download Policy Schedule").click()
 
         page.wait_for_timeout(10000)
@@ -139,7 +171,6 @@ def test_PA(page):
         policy_text = policy_locator.text_content()
         policy_number = policy_text.replace("Policy #:", "").strip()
         print("Policy Number:", policy_number)
-
 
 
         # ------- SAVE TO EXCEL -------
@@ -174,7 +205,10 @@ def test_PA(page):
 
 
         # ---- SEND EMAIL ----
-        send_email()
+        try:
+            send_email()
+        except Exception as e:
+            print("Email failed:", e)
 
     finally:
         page.wait_for_timeout(15000)

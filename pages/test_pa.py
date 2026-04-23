@@ -70,7 +70,7 @@ def test_PA(page):
 
         # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
         try:
-            page.get_by_role("button", name="Yes").first.wait_for(state="visible", timeout=8000)
+            page.get_by_role("button", name="Yes").first.wait_for(state="visible", timeout=5000)
             page.get_by_role("button", name="Yes").first.click()
             page.wait_for_timeout(2000)
         except:

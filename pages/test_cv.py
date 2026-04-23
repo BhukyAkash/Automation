@@ -49,7 +49,7 @@ def test_cv_motor(page):
         page.get_by_role("option", name="NA").click()
 
         page.locator("mat-form-field").filter(has_text="Seating Capacity *").locator("#seatCapacity").fill("5")
-        page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("5")
+        page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("10")
 
         page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-84").click()
         page.get_by_role("option", name="Tonnes").click()
@@ -112,9 +112,12 @@ def test_cv_motor(page):
 
         # ---- CHECK IF ADDRESS ALREADY EXISTS ----
         add_button = page.locator("button[name='Add'], button:has-text('Add')").first
-        if add_button.is_visible():
+        try:
+            add_button.wait_for(state="visible", timeout=3000)
             add_button.click()
-            page.wait_for_timeout(1000)
+            page.wait_for_timeout(2000)
+        except:
+            pass
 
         # ---- STATE ---- (runs for both cases)
         page.locator(".mat-select-placeholder").first.click()
@@ -245,7 +248,10 @@ def test_cv_motor(page):
         wb.save(file_path)
 
         # -------- SEND EMAIL ---------
-        send_email()
+        try:
+            send_email()
+        except Exception as e:
+            print("Email failed:", e)
 
     finally:
         page.get_by_text("playwright", exact=True).click()

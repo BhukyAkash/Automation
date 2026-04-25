@@ -234,15 +234,17 @@ def test_cv_motor(page):
             row += 1
 
         # ---- Policy Type ----
+        registration = "RV"
         policy_type = "CV"
 
         inception_date_excel = today.strftime("%d-%m-%Y")
 
         # ---- Write data ----
-        ws.cell(row=row, column=4).value = policy_type
-        ws.cell(row=row, column=6).value = quote_number
-        ws.cell(row=row, column=7).value = policy_number
-        ws.cell(row=row, column=8).value = inception_date_excel
+        ws.cell(row=row, column=3).value = registration     # Column C
+        ws.cell(row=row, column=4).value = policy_type      # Column D
+        ws.cell(row=row, column=6).value = quote_number     # Column F
+        ws.cell(row=row, column=7).value = policy_number    # Column G
+        ws.cell(row=row, column=8).value = inception_date_excel       # Column H
 
         # ---- Save file ----
         wb.save(file_path)

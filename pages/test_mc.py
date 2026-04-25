@@ -65,7 +65,7 @@ def test_mc_motor(page):
         # ---- STATE ---- (runs for both cases)
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Johor").click()
-        page.wait_for_timeout(5000)
+        page.wait_for_timeout(3000)
 
         # ---- PINCODE ----
         page.locator(".mat-select-placeholder").first.click()
@@ -81,8 +81,7 @@ def test_mc_motor(page):
         address_save = page.locator("button#save")
         if address_save.is_visible():
             address_save.click()
-            page.locator("//label[@for='3']//div[@class='box-card justify-content-between']").wait_for(state="visible")
-            page.locator("//label[@for='3']//div[@class='box-card justify-content-between']").click()
+            
 
         # Locate the element that contains the quote reference
         quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
@@ -113,14 +112,7 @@ def test_mc_motor(page):
 
         page.reload()
 
-        # ---- Printing the policy number ---
-        policy_locator = page.locator("text=Policy #:")
-        policy_locator.wait_for()
-        policy_text = policy_locator.text_content()
-        policy_number = policy_text.replace("Policy #:", "").strip()
-        print("Policy Number:", policy_number)
-
-
+        
         # ---- Download the policy schedule ----
         page.get_by_role("button", name="Download & e-mail Policy").click()
         page.wait_for_timeout(5000)
@@ -129,6 +121,15 @@ def test_mc_motor(page):
             page.get_by_role("button", name="Submit").click()
         download = download_info.value
         download.save_as("downloads/MC_policy.pdf")
+        
+
+        # ---- Printing the policy number ---
+        policy_locator = page.locator("text=Policy #:")
+        policy_locator.wait_for()
+        policy_text = policy_locator.text_content()
+        policy_number = policy_text.replace("Policy #:", "").strip()
+        print("Policy Number:", policy_number)
+        
         print("Policy is Issued and Schedule letter downloaded successfully.")
 
         # --------- SAVE TO EXCEL ---------
@@ -149,15 +150,17 @@ def test_mc_motor(page):
             row += 1
 
         # ---- Policy Type ----
+        registration = "RV"
         policy_type = "MC"
 
         inception_date_excel = datetime.today().strftime("%d-%m-%Y")
 
         # ---- Write data ----
-        ws.cell(row=row, column=4).value = policy_type
-        ws.cell(row=row, column=6).value = quote_number
-        ws.cell(row=row, column=7).value = policy_number
-        ws.cell(row=row, column=8).value = inception_date_excel
+        ws.cell(row=row, column=3).value = registration     # Column C
+        ws.cell(row=row, column=4).value = policy_type      # Column D
+        ws.cell(row=row, column=6).value = quote_number     # Column F
+        ws.cell(row=row, column=7).value = policy_number    # Column G
+        ws.cell(row=row, column=8).value = inception_date_excel       # Column H
 
         # ---- Save file ----
         wb.save(file_path)

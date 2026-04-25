@@ -16,7 +16,7 @@ def test_PA(page):
 
         # ---- MYKAD ID ----
         page.locator("#dx-input-0").nth(1).click()
-        page.locator("#dx-input-0").nth(1).fill("880525028893")
+        page.locator("#dx-input-0").nth(1).fill("880425028893")
 
         # ---- PH NAME ----
         page.locator("#dx-input-1").nth(1).click()
@@ -104,8 +104,7 @@ def test_PA(page):
         address_save = page.get_by_role("button", name="Save")
         if address_save.is_visible():
             address_save.click()
-            page.locator("//label[@for='3']//div[@class='box-card justify-content-between']").wait_for(state="visible")
-            page.locator("//label[@for='3']//div[@class='box-card justify-content-between']").click()
+            #page.locator("label[for='1'] .box-card").click()
 
 
         # ---- CONTACT DETAILS ----
@@ -191,10 +190,12 @@ def test_PA(page):
             row += 1
 
         # ---- Policy Type ----
+        registration = "NV"
         policy_type = "PA"
         inception_date_excel = datetime.today().strftime("%d-%m-%Y")
 
         # ---- Write data ----
+        ws.cell(row=row, column=3).value = registration     # Column C
         ws.cell(row=row, column=4).value = policy_type      # Column D
         ws.cell(row=row, column=6).value = quote_number     # Column F
         ws.cell(row=row, column=7).value = policy_number    # Column G

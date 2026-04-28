@@ -144,9 +144,9 @@ def test_mc_motor(page):
             wb = Workbook()
             ws = wb.active
 
-        # ---- Find next empty row based on Column D (Motor Type) ----
+        # ---- Find next empty row based on Column C (NV/RV) ----
         row = 2  # start after header
-        while ws.cell(row=row, column=4).value:
+        while ws.cell(row=row, column=3).value:
             row += 1
 
         # ---- Policy Type ----

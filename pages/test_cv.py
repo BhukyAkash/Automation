@@ -138,8 +138,7 @@ def test_cv_motor(page):
         address_save = page.locator("button#save")
         if address_save.is_visible():
             address_save.click()
-            page.locator("//label[@for='2']//div[@class='box-card justify-content-between']").wait_for(state="visible")
-            page.locator("//label[@for='2']//div[@class='box-card justify-content-between']").click()
+            
 
         # ---- DECLARATION STATEMENTS ----
         page.get_by_text("We respect your privacy and").click()
@@ -228,9 +227,9 @@ def test_cv_motor(page):
             wb = Workbook()
             ws = wb.active
 
-        # ---- Find next empty row based on Column D (Motor Type) ----
+        # ---- Find next empty row based on Column C (NV/RV) ----
         row = 2  # start after header
-        while ws.cell(row=row, column=4).value:
+        while ws.cell(row=row, column=3).value:
             row += 1
 
         # ---- Policy Type ----

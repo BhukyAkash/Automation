@@ -121,7 +121,6 @@ def test_pc_motor(page):
         if address_save.is_visible():
             address_save.click()
 
-        
         # ---- Garage Types ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Public Road").click()
@@ -151,14 +150,13 @@ def test_pc_motor(page):
         page.wait_for_timeout(17000)
 
         
-                # ===== INCOGNITO SESSION (Branch Manager) =====
+        # ===== INCOGNITO SESSION (Branch Manager) =====
         browser = page.context.browser
         manager_context = browser.new_context()
         manager_page = manager_context.new_page()
 
         manager_page.goto(f"https://agent-uat.tuneinsurance.com/#/qms/quote/motor/reg/cover-details?edit=true&quoteNr={quote_number}")
         
-
         manager_page.get_by_role("textbox", name="Username or email").fill("rahul@serole.com")
         manager_page.get_by_role("textbox", name="Password").fill("Serole@321")
         manager_page.get_by_role("button", name="Login").click()
@@ -171,7 +169,7 @@ def test_pc_motor(page):
         manager_page.close()
 
 
-                # ====== BACK TO ORIGINAL SESSION (TPM AGENT) =====
+        # ====== BACK TO ORIGINAL SESSION (TPM AGENT) =====
         page.wait_for_timeout(10000)
         page.reload()
         page.wait_for_load_state("networkidle")

@@ -211,9 +211,12 @@ def test_pc_motor(page):
 
         # ---- Auto-fill Column I & J from previous row (like Ctrl+D) ----
         if row > 2:  # skip if it's the first data row (no row above to copy)
+            prev_col_b = ws.cell(row=row - 1, column=2).value   # Column B
             prev_col_i = ws.cell(row=row - 1, column=9).value   # Column I
             prev_col_j = ws.cell(row=row - 1, column=10).value  # Column J
 
+            if prev_col_b:
+                ws.cell(row=row, column=2).value = prev_col_b   # Column B
             if prev_col_i:
                 ws.cell(row=row, column=9).value = prev_col_i   # Column I
             if prev_col_j:

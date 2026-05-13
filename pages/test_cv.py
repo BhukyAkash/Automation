@@ -245,6 +245,17 @@ def test_cv_motor(page):
         ws.cell(row=row, column=7).value = policy_number    # Column G
         ws.cell(row=row, column=8).value = inception_date_excel       # Column H
 
+        # ---- Auto-fill Column I & J from previous row (like Ctrl+D) ----
+        if row > 2:  # skip if it's the first data row (no row above to copy)
+            prev_col_i = ws.cell(row=row - 1, column=9).value   # Column I
+            prev_col_j = ws.cell(row=row - 1, column=10).value  # Column J
+
+            if prev_col_i:
+                ws.cell(row=row, column=9).value = prev_col_i   # Column I
+            if prev_col_j:
+                ws.cell(row=row, column=10).value = prev_col_j  # Column J
+
+
         # ---- Save file ----
         wb.save(file_path)
 

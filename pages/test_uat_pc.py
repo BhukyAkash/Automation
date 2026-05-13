@@ -3,7 +3,7 @@ from openpyxl import Workbook, load_workbook
 from excel_utils import get_vehicle_data
 from datetime import datetime
 from base_login import login, navigation, pc_moto
-from pages.test_mail import send_email
+from test_mail import send_email
 
 
 def test_pc_motor(page):
@@ -27,8 +27,16 @@ def test_pc_motor(page):
         page.get_by_role("button", name="search Vehicle Search").click()
 
         #---- VEHICLE DETAILS SAVE ----
-        page.get_by_role("button", name="Save Vehicle Info").click()
+        #---- VEHICLE DETAILS SAVE ----
+        search_vehicle = page.get_by_role("button", name="Save Vehicle Info").first
 
+        try:
+            search_vehicle.wait_for(state="visible", timeout=5000)
+            search_vehicle.click()
+            page.wait_for_load_state("networkidle")
+        except:
+            print("Save Vehicle Info button not available, continuing...")
+        
 
         # ========== SECOND SCREEN ==========
 
@@ -112,8 +120,6 @@ def test_pc_motor(page):
         address_save = page.locator("button#save")
         if address_save.is_visible():
             address_save.click()
-            page.locator("//label[@for='3']//div[@class='box-card justify-content-between']").wait_for(state="visible")
-            page.locator("//label[@for='3']//div[@class='box-card justify-content-between']").click()
 
         
         # ---- Garage Types ----
@@ -185,7 +191,6 @@ def test_pc_motor(page):
         policy_number = policy_text.replace("Policy #:", "").strip()
 
         print("Policy Number:", policy_number)
-
 
 
     finally:

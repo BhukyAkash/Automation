@@ -20,7 +20,6 @@ def test_PA(page):
         page.locator("#dx-input-0").nth(1).fill(mykad)
         print("MyKad ID: ", mykad)
 
-
         # ---- PH NAME ----
         page.locator("#dx-input-1").nth(1).click()
         page.locator("#dx-input-1").nth(1).fill("PERSONAL ACCIDENT")
@@ -31,9 +30,11 @@ def test_PA(page):
         page.get_by_role("option", name="Class 2").click()
 
         # ---- PRODUCT SELECTION ----
+        selected_title = "Personal Accident Safe"    
+        #selected_title = "PA Shield"
         page.locator("[formcontrolname='paProducts']").click()
-        page.get_by_role("option", name="Personal Accident Safe").click()
-        #page.get_by_role("option", name="PA Shield").click()
+        page.get_by_role("option", name=selected_title).click()
+        print("Selected Product:", selected_title)
 
         # ---- PLAN TYPE ----
         page.locator("#occupation-description").filter(has_text="Sum Insured").click()
@@ -84,30 +85,29 @@ def test_PA(page):
         try:
             add_button.wait_for(state="visible", timeout=3000)
             add_button.click()
-            page.wait_for_timeout(2000)
+            page.wait_for_timeout(1000)
         except:
             pass  
 
         # ---- STATE ---- (runs for both cases)
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Johor").click()
-        page.wait_for_timeout(3000)
+        page.wait_for_timeout(2000)
 
         # ---- PINCODE ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="81100").click()
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(1000)
 
         # ---- STREET ADDRESS ----
         page.get_by_role("combobox", name="Address Line").click()
         page.get_by_role("option", name="Taman Desa Harmoni", exact=True).click()
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(1000)
 
         # ---- SAVE BUTTON (if address is added) ----
         address_save = page.get_by_role("button", name="Save")
         if address_save.is_visible():
-            address_save.click()
-            #page.locator("label[for='1'] .box-card").click()
+            address_save.click()            
 
 
         # ---- CONTACT DETAILS ----
@@ -141,7 +141,7 @@ def test_PA(page):
         download = download_info.value
         download.save_as("downloads/PA_quote.pdf")
         page.get_by_text("close", exact=True).click()
-        print("Quote Generated successfully")
+        print("Quote PDF Generated successfully")
 
         page.wait_for_timeout(10000)
 
@@ -165,8 +165,6 @@ def test_PA(page):
         download.save_as("downloads/PA_policy.pdf")
         page.get_by_text("close", exact=True).click()
 
-        print("Policy Schedule downloaded successfully")
-
         # ---- Printing the policy number ----
         policy_locator = page.locator("text=Policy #:")
         policy_locator.wait_for()
@@ -174,6 +172,7 @@ def test_PA(page):
         policy_number = policy_text.replace("Policy #:", "").strip()
         print("Policy Number:", policy_number)
 
+        print("Policy Schedule downloaded successfully")
 
         # ------- SAVE TO EXCEL -------
 
@@ -188,9 +187,16 @@ def test_PA(page):
             ws = wb.active
 
         # ---- Find next empty row based on Column C (NV/RV) ----
-        row = 2  # start after header
+        row = 2
         while ws.cell(row=row, column=3).value:
             row += 1
+
+        # ---- Serial Number in Column A ----
+        if row == 2:
+            serial_no = 1
+        else:
+            prev_serial = ws.cell(row=row - 1, column=1).value
+            serial_no = (prev_serial or 0) + 1
 
         # ---- Policy Type ----
         registration = "NV"
@@ -198,17 +204,22 @@ def test_PA(page):
         inception_date_excel = datetime.today().strftime("%d-%m-%Y")
 
         # ---- Write data ----
-        ws.cell(row=row, column=3).value = registration     # Column C
-        ws.cell(row=row, column=4).value = policy_type      # Column D
-        ws.cell(row=row, column=6).value = quote_number     # Column F
-        ws.cell(row=row, column=7).value = policy_number    # Column G
+        ws.cell(row=row, column=1).value = serial_no        # Column A - Serial Number
+        ws.cell(row=row, column=3).value = registration     # Column C - NV/RV
+        ws.cell(row=row, column=4).value = policy_type      # Column D - Policy Type
+        ws.cell(row=row, column=5).value = selected_title   # Column E - Coverage Type
+        ws.cell(row=row, column=6).value = quote_number     # Column F - Quote Number
+        ws.cell(row=row, column=7).value = policy_number    # Column G - Policy Number
         ws.cell(row=row, column=8).value = inception_date_excel
 
-        # ---- Auto-fill Column I & J from previous row (like Ctrl+D) ----
-        if row > 2:  # skip if it's the first data row (no row above to copy)
+        # ---- Auto-fill Column B, I & J from previous row (like Ctrl+D) ----
+        if row > 2:
+            prev_col_b = ws.cell(row=row - 1, column=2).value   # Column B
             prev_col_i = ws.cell(row=row - 1, column=9).value   # Column I
             prev_col_j = ws.cell(row=row - 1, column=10).value  # Column J
 
+            if prev_col_b:
+                ws.cell(row=row, column=2).value = prev_col_b   # Column B
             if prev_col_i:
                 ws.cell(row=row, column=9).value = prev_col_i   # Column I
             if prev_col_j:
@@ -216,6 +227,8 @@ def test_PA(page):
 
         # ---- Save file ----
         wb.save(file_path)
+
+        print("In Excel, Quote and Policy numbers captured successfully")
 
 
         # ---- SEND EMAIL ----

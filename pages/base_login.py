@@ -28,3 +28,12 @@ def navi_pa(page):
     page.get_by_role("heading", name="Accident & Health").click()
     page.get_by_role("heading", name="Personal Accident").click()
     page.get_by_role("button", name="Next").click()
+
+def manager_approval(manager_page):
+    manager_page.get_by_role("textbox", name="Username or email").fill("rahul@serole.com")
+    manager_page.get_by_role("textbox", name="Password").fill("Serole@321")
+    manager_page.get_by_role("button", name="Login").click()
+    manager_page.wait_for_timeout(30000)
+    # === Approve the quote ===
+    manager_page.get_by_role("button", name="Accept & Process").click()
+    manager_page.close()

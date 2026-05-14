@@ -19,11 +19,11 @@ def test_pc_motor(page):
         vehicle_data = get_vehicle_data("PC")
         page.get_by_role("textbox").first.fill(vehicle_data["vehicle_reg_no"])
 
-        #---- Place of Use ----
+        # ---- Place of Use ----
         page.locator(".mat-select-placeholder").click()
         page.get_by_role("option", name="Johor").click()
 
-        #---- Vehicle Search ----
+        # ---- Vehicle Search ----
         page.get_by_role("button", name="search Vehicle Search").click()
         page.wait_for_timeout(5000)
         

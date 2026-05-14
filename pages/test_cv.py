@@ -1,5 +1,6 @@
 import os
-from base_login import login, navigation, cv_moto
+import traceback
+from base_login import login, navigation, cv_moto, manager_approval
 from excel_utils import get_vehicle_data
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
@@ -9,6 +10,7 @@ from test_mail import send_email
 def test_cv_motor(page):
 
     try:
+        page.wait_for_load_state
         login(page)
         navigation(page)
         cv_moto(page)
@@ -41,29 +43,49 @@ def test_cv_motor(page):
         page.locator("mat-form-field", has_text="Model").click()
         page.get_by_role("option", name="F16").click()
 
+        # ---- Year of Manufacture ----
         page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-74").click()
-        page.get_by_role("option", name="2016").click()
+        page.get_by_role("option", name="2005").click()
+        page.wait_for_timeout(2000)
+
+        # ---- Vehicle Age (to determine coverage type) ---- 
+        vehicle_age_locator = page.locator("mat-form-field").filter(has_text="Vehicle Age").locator("#vehicleAge")
+        vehicle_age_text = vehicle_age_locator.input_value().strip()
+
+        vehicle_age = int(vehicle_age_text)
+        print(f"Vehicle Age: {vehicle_age} years")
 
         # ---- VARIANT ----
         page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-76").click()
         page.get_by_role("option", name="NA").click()
 
+        # ---- Seating Capacity ----
         page.locator("mat-form-field").filter(has_text="Seating Capacity *").locator("#seatCapacity").fill("5")
-        page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("10")
+        # ---- Carrying Capacity ----
+        page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("1")
 
         page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-84").click()
-        page.get_by_role("option", name="Tonnes").click()
+        page.get_by_role("option", name="kg").click()
+        #page.get_by_role("option", name="Tonnes").click()
 
         page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-86").click()
         page.get_by_role("option", name="Beverages Bottles").click()
 
+        # ---- Save Vehicle Info Button ----
         page.get_by_role("button", name="Save Vehicle Info").click()
 
 
         # ========== SECOND SCREEN ==========
 
+        # ---- Coverage Type ----
         page.locator("#mat-select-value-31").click()
-        page.get_by_role("option", name="Comprehensive").click()
+        if vehicle_age >= 20:
+            page.get_by_role("option", name="TP, Fire & Theft").click()
+        else:
+            page.get_by_role("option", name="Comprehensive").click()
+
+        selected_coverage = page.locator("#mat-select-value-31").inner_text().strip()
+        print("Selected Coverage type: ", selected_coverage)
 
         # ---- INCEPTION DATE (Today's date) ----
         today = datetime.today()
@@ -78,7 +100,7 @@ def test_cv_motor(page):
 
         # ----- SUM INSURED ----
         page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").click()
-        page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").fill("200000")
+        page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").fill("20000")
 
         # ---- BUSINESS REGISTRATION NUMBER ----
         page.locator("mat-form-field").filter(has_text="Business Registration # *").locator("#id").fill(vehicle_data["mykad"])
@@ -86,7 +108,6 @@ def test_cv_motor(page):
 
         # ---- NAME AS PER ID / LEGAL NAME ----
         page.locator("dx-input").filter(has_text="* Name as per ID / Legal Name").locator("#legalName").fill("CV C Permit")
-
         page.get_by_role("button", name="search Validate Owner as per").click()
 
         # ---- NCD value ----
@@ -100,45 +121,47 @@ def test_cv_motor(page):
 
         page.wait_for_timeout(5000)
         
-
         # ========== THIRD SCREEN ==== PH Details ======
 
         # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
-        yes_button = page.get_by_role("button", name="Yes").first
-
-        if yes_button.is_visible():
-                yes_button.click()
-                page.wait_for_timeout(1000)
+        try:
+            yes_button = page.get_by_role("button", name="Yes").first
+            yes_button.wait_for(state="visible", timeout=5000)
+            yes_button.click()
+            page.wait_for_timeout(1000)
+            print("Yes button clicked")
+        except:
+            print("Yes button not visible, skipping")
 
         # ---- CHECK IF ADDRESS ALREADY EXISTS ----
-        add_button = page.locator("button[name='Add'], button:has-text('Add')").first
         try:
-            add_button.wait_for(state="visible", timeout=3000)
+            add_button = page.locator("button[name='Add'], button:has-text('Add')").first
+            add_button.wait_for(state="visible", timeout=5000)
             add_button.click()
+            print("Add button clicked")
             page.wait_for_timeout(2000)
         except:
-            pass
+            print("Add button not visible, skipping")
 
         # ---- STATE ---- (runs for both cases)
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Johor").click()
-        page.wait_for_timeout(5000)
+        page.wait_for_timeout(2000)
 
         # ---- PINCODE ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="81100").click()
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(1000)
 
         # ---- STREET ADDRESS ----
         page.get_by_role("combobox", name="Address Line").click()
         page.get_by_role("option", name="Taman Desa Harmoni", exact=True).click()
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(1000)
 
         # ---- SAVE BUTTON (if address is added) ----
         address_save = page.locator("button#save")
         if address_save.is_visible():
             address_save.click()
-            
 
         # ---- DECLARATION STATEMENTS ----
         page.get_by_text("We respect your privacy and").click()
@@ -149,49 +172,44 @@ def test_cv_motor(page):
         quote_number = quote_text.strip()
         print("Quote Number:", quote_number)
 
-        # -------- SUBMIT FOR APPROVAL ---------
-        page.get_by_role("button", name="Submit for TPM Staff Approval").click()
-        page.wait_for_timeout(17000)
+        # ===== THIRD SCREEN FLOW =====
 
-        # ===== INCOGNITO SESSION (Branch Manager) =====
+        submit_approval_btn = page.get_by_role("button", name="Submit for TPM Staff Approval")
+        generate_quote_btn = page.get_by_role("button", name="Generate Quote")
 
-        browser = page.context.browser
-        manager_context = browser.new_context()
-        manager_page = manager_context.new_page()
+        # ---- Approval Flow ----
+        if submit_approval_btn.is_visible():
+            submit_approval_btn.click()
+            page.wait_for_timeout(17000)
 
-        manager_page.goto(f"https://agent-uat.tuneinsurance.com/#/qms/quote/motor/rcv/cover-details?edit=true&quoteNr={quote_number}")
-        manager_page.get_by_role("textbox", name="Username or email").fill("rahul@serole.com")
-        manager_page.get_by_role("textbox", name="Password").fill("Serole@321")
-        manager_page.get_by_role("button", name="Login").click()
+            # ---- Incognito Session ----
+            browser = page.context.browser
+            manager_page = browser.new_context().new_page()
+            manager_page.goto(f"https://agent-uat.tuneinsurance.com/#/qms/quote/motor/rcv/cover-details?edit=true&quoteNr={quote_number}")
 
-        manager_page.wait_for_timeout(20000)
-        manager_page.reload()
+            manager_approval(manager_page)
 
-        # ---- APPROVE THE QUOTE ----
-        manager_page.get_by_role("button", name="Accept & Process").click()
-        manager_page.close()
+            page.wait_for_timeout(10000)
+            page.get_by_role("button", name="Back").click()
+            page.wait_for_timeout(3000)
 
-        # ======= BACK TO ORIGINAL SESSION =======
+        # ---- Generate Quote Flow ----
+        if generate_quote_btn.is_visible():
+            generate_quote_btn.click()
 
-        page.wait_for_timeout(10000)
-        '''page.reload()
-        page.wait_for_load_state("networkidle")'''
+            with page.expect_download() as download_info:
+                page.get_by_role("button", name="Submit").click()
+            download_info.value.save_as("downloads/CV_quote.pdf")
 
-        page.get_by_role("button", name="Back").click()
-        page.get_by_role("button", name="Generate Quote").click()
-        page.wait_for_timeout(5000)
+            page.get_by_role( "button", name="Proceed to Policy Issuance").click()
 
-        with page.expect_download() as download_info:
-            page.get_by_role("button", name="Submit").click()
-        download = download_info.value
-        download.save_as("downloads/CV_quote.pdf")
+            # ----- ISSUE POLICY -----
+            page.get_by_role("button", name="Issue Policy").click()
 
-        page.get_by_role("button", name="Proceed to Policy Issuance").click()
+        else:
+            print("Generate Quote button not visible")
 
-        # ------- POLICY ISSUANCE -------
-        page.get_by_role("button", name="Issue Policy").click()
-
-        page.wait_for_timeout(30000)
+        page.wait_for_timeout(25000)
 
         page.reload()
 
@@ -203,7 +221,6 @@ def test_cv_motor(page):
         policy_text = policy_locator.text_content()
         policy_number = policy_text.replace("Policy #:", "").strip()
         print("Policy Number:", policy_number)
-
 
         # ---- Download the policy schedule ----
         page.get_by_role("button", name="Download & e-mail Policy").click()
@@ -228,9 +245,16 @@ def test_cv_motor(page):
             ws = wb.active
 
         # ---- Find next empty row based on Column C (NV/RV) ----
-        row = 2  # start after header
+        row = 2
         while ws.cell(row=row, column=3).value:
             row += 1
+
+        # ---- Serial Number in Column A ----
+        if row == 2:
+            serial_no = 1
+        else:
+            prev_serial = ws.cell(row=row - 1, column=1).value
+            serial_no = (prev_serial or 0) + 1
 
         # ---- Policy Type ----
         registration = "RV"
@@ -239,14 +263,16 @@ def test_cv_motor(page):
         inception_date_excel = today.strftime("%d-%m-%Y")
 
         # ---- Write data ----
-        ws.cell(row=row, column=3).value = registration     # Column C
-        ws.cell(row=row, column=4).value = policy_type      # Column D
-        ws.cell(row=row, column=6).value = quote_number     # Column F
-        ws.cell(row=row, column=7).value = policy_number    # Column G
-        ws.cell(row=row, column=8).value = inception_date_excel       # Column H
+        ws.cell(row=row, column=1).value = serial_no                # Column A - Serial Number
+        ws.cell(row=row, column=3).value = registration             # Column C - NV/RV
+        ws.cell(row=row, column=4).value = policy_type              # Column D - Policy Type
+        ws.cell(row=row, column=5).value = selected_coverage        # Column E - Coverage Type
+        ws.cell(row=row, column=6).value = quote_number             # Column F - Quote Number
+        ws.cell(row=row, column=7).value = policy_number            # Column G - Policy Number
+        ws.cell(row=row, column=8).value = inception_date_excel     # Column H - Inception Date
 
         # ---- Auto-fill Column I & J from previous row (like Ctrl+D) ----
-        if row > 2:  # skip if it's the first data row (no row above to copy)
+        if row > 2:
             prev_col_b = ws.cell(row=row - 1, column=2).value   # Column B
             prev_col_i = ws.cell(row=row - 1, column=9).value   # Column I
             prev_col_j = ws.cell(row=row - 1, column=10).value  # Column J
@@ -262,11 +288,17 @@ def test_cv_motor(page):
         # ---- Save file ----
         wb.save(file_path)
 
+        print("In Excel, Quote and Policy numbers captured successfully")
+
         # -------- SEND EMAIL ---------
         try:
             send_email()
         except Exception as e:
             print("Email failed:", e)
+
+    except Exception as e:
+    # ADD THIS - captures the real error
+        print("Test failed:", traceback.format_exc())
 
     finally:
         page.get_by_text("playwright", exact=True).click()

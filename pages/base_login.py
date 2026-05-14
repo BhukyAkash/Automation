@@ -31,7 +31,7 @@ def navi_pa(page):
 
 def manager_approval(manager_page):
     manager_page.get_by_role("textbox", name="Username or email").fill("rahul@serole.com")
-    manager_page.get_by_role("textbox", name="Password").fill("Serole@321")
+    manager_page.get_by_role("textbox", name="Password").fill("Serole@123")
     manager_page.get_by_role("button", name="Login").click()
     manager_page.wait_for_timeout(30000)
     # === Approve the quote ===

@@ -1,9 +1,9 @@
 import os
-from openpyxl import Workbook, load_workbook
 from base_login import login, navi_pa
-from test_mail import send_email
-from datetime import datetime
 from test_mykad_id import generate_mykad
+from datetime import datetime
+from openpyxl import Workbook, load_workbook
+from test_mail import send_email
 
 def test_PA(page):
 

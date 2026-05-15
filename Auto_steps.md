@@ -61,6 +61,7 @@ git status
 git add <file name>
 git commit -m "Message"
 git push
+git ls-files
 
 git update-index --skip-wroktree <filename>   -    command to ignore PUSH of file
 git ls-files -v | findstr "^S"                -    for Git ignored files

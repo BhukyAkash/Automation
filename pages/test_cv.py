@@ -45,9 +45,8 @@ def test_cv_motor(page):
 
         # ---- Year of Manufacture ----
         #page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-74").click()
-        
         page.locator("mat-form-field", has_text="Year of Manufacture").click()
-        page.get_by_role("option", name="2005").click()
+        page.get_by_role("option", name="2015").click()
         page.wait_for_timeout(2000)
 
         # ---- Vehicle Age (to determine coverage type) ---- 
@@ -64,7 +63,7 @@ def test_cv_motor(page):
         # ---- Seating Capacity ----
         page.locator("mat-form-field").filter(has_text="Seating Capacity *").locator("#seatCapacity").fill("5")
         # ---- Carrying Capacity ----
-        page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("1")
+        page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("11")
 
         page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-84").click()
         page.get_by_role("option", name="kg").click()
@@ -174,6 +173,7 @@ def test_cv_motor(page):
         # ---- Approval Flow ----
         if submit_approval_btn.is_visible():
             submit_approval_btn.click()
+            print("Clicked on Submit for TPM Staff Approval button")
             page.wait_for_timeout(17000)
 
             # ---- Incognito Session ----
@@ -190,6 +190,7 @@ def test_cv_motor(page):
         # ---- Generate Quote Flow ----
         if generate_quote_btn.is_visible():
             generate_quote_btn.click()
+            print("STP process, clicked on Generate Quote button")
 
             with page.expect_download() as download_info:
                 page.get_by_role("button", name="Submit").click()

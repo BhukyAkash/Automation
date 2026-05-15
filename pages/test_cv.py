@@ -1,6 +1,6 @@
 import os
 import traceback
-from base_login import login, navigation, cv_moto, manager_approval
+from base_login import incep_date, issue_policy, login, navigation, cv_moto, manager_approval
 from excel_utils import get_vehicle_data
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
@@ -44,7 +44,9 @@ def test_cv_motor(page):
         page.get_by_role("option", name="F16").click()
 
         # ---- Year of Manufacture ----
-        page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-74").click()
+        #page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-74").click()
+        
+        page.locator("mat-form-field", has_text="Year of Manufacture").click()
         page.get_by_role("option", name="2005").click()
         page.wait_for_timeout(2000)
 
@@ -87,16 +89,8 @@ def test_cv_motor(page):
         selected_coverage = page.locator("#mat-select-value-31").inner_text().strip()
         print("Selected Coverage type: ", selected_coverage)
 
-        # ---- INCEPTION DATE (Today's date) ----
-        today = datetime.today()
-        aria_date = today.strftime("%B %d, %Y").replace(" 0", " ")
-
-        page.locator("mat-form-field") \
-            .filter(has_text="Inception Date * event") \
-            .get_by_label("Open calendar") \
-            .click()
-
-        page.get_by_role("gridcell", name=aria_date).click()
+        # ---- COVERAGE DATE -----
+        incep_date(page)
 
         # ----- SUM INSURED ----
         page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").click()
@@ -201,27 +195,9 @@ def test_cv_motor(page):
                 page.get_by_role("button", name="Submit").click()
             download_info.value.save_as("downloads/CV_quote.pdf")
 
-            page.get_by_role( "button", name="Proceed to Policy Issuance").click()
-
-            # ----- ISSUE POLICY -----
-            page.get_by_role("button", name="Issue Policy").click()
-
-        else:
-            print("Generate Quote button not visible")
-
-        page.wait_for_timeout(25000)
-
-        page.reload()
-
-        page.wait_for_timeout(20000)
-
-        # ---- Printing the policy number ---
-        policy_locator = page.locator("text=Policy #:")
-        policy_locator.wait_for()
-        policy_text = policy_locator.text_content()
-        policy_number = policy_text.replace("Policy #:", "").strip()
-        print("Policy Number:", policy_number)
-
+        # ==== Issue Policy function ====
+        policy_number = issue_policy(page)
+        
         # ---- Download the policy schedule ----
         page.get_by_role("button", name="Download & e-mail Policy").click()
         page.wait_for_timeout(5000)
@@ -231,7 +207,7 @@ def test_cv_motor(page):
         download = download_info.value
         download.save_as("downloads/CV_policy.pdf")
 
-
+        
         # --------- SAVE TO EXCEL ---------
         
         file_path = "UATStability.xlsx"
@@ -260,7 +236,7 @@ def test_cv_motor(page):
         registration = "RV"
         policy_type = "CV"
 
-        inception_date_excel = today.strftime("%d-%m-%Y")
+        inception_date_excel = datetime.today().strftime("%d-%m-%Y")
 
         # ---- Write data ----
         ws.cell(row=row, column=1).value = serial_no                # Column A - Serial Number

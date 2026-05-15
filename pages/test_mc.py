@@ -175,7 +175,7 @@ def test_mc_motor(page):
         print("Quote PDF downloaded successfully.")
 
         # ==== Issue Policy function ====
-        issue_policy(page)
+        policy_number = issue_policy(page)
         
         # ---- Download the policy schedule ----
         page.get_by_role("button", name="Download & e-mail Policy").click()
@@ -215,7 +215,6 @@ def test_mc_motor(page):
         # ---- Policy Type ----
         registration = "RV"
         policy_type = "MC"
-        policy_number = issue_policy(page)
 
         inception_date_excel = datetime.today().strftime("%d-%m-%Y")
 

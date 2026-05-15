@@ -1,5 +1,5 @@
 import os
-from base_login import login, navigation, pc_moto
+from base_login import incep_date, issue_policy, login, navigation, pc_moto
 from excel_utils import get_vehicle_data
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
@@ -56,20 +56,7 @@ def test_pc_motor(page):
         print("Selected Coverage type: ", selected_coverage)
 
         # ---- COVERAGE DATE -----
-            # today date
-        today = datetime.today()
-
-            # Angular Material aria-label format
-        aria_date = today.strftime("%B %d, %Y").replace(" 0", " ")
-
-            # Open calendar
-        page.locator("mat-form-field") \
-            .filter(has_text="Inception Date * event") \
-            .get_by_label("Open calendar") \
-            .click()
-
-            # Select today
-        page.get_by_role("gridcell", name=aria_date).click()
+        incep_date(page)
 
         # ---- MARKET VALUE ----
         market_value_text = page.locator("mat-form-field").filter(has_text="Market Value").locator("#ismMarketValue").input_value().strip()
@@ -89,7 +76,6 @@ def test_pc_motor(page):
         #----NAME OF THE PH ----
         page.locator("mat-form-field").filter(has_text="Name as per ID *").locator("#legalName").fill("PC")
         page.get_by_role("button", name="search Validate Owner as per").click()
-        print("Regio's validated successfully")
 
         # ---- NCD value ----
         page.wait_for_timeout(7000)
@@ -98,6 +84,7 @@ def test_pc_motor(page):
 
         #---- SAVE & NEXT BUTTON -----
         page.get_by_role("button", name="Save & Next").click()
+        print("Registration Number is Triggered to ISM")
 
 
         # ========== THIRD SCREEN === COVER DETAILS ==========
@@ -166,15 +153,8 @@ def test_pc_motor(page):
         download.save_as("downloads/PC_quote.pdf")
         print("Quote PDF downloaded successfully.")
 
-        # ----- PROCEED TO POLICY ISSUANCE ----
-        page.get_by_role("button", name="Proceed to Policy Issuance").click()
-
-        # ------- POLICY ISSUANCE -------
-        page.get_by_role("button", name="Issue Policy").click()
-
-        page.wait_for_timeout(30000)
-
-        page.reload()
+        # ==== Issue Policy function ====
+        policy_number = issue_policy(page)
 
         # ---- Download the policy schedule ----
         page.get_by_role("button", name="Download & e-mail Policy").click()
@@ -184,14 +164,6 @@ def test_pc_motor(page):
             page.get_by_role("button", name="Submit").click()
         download = download_info.value
         download.save_as("downloads/PC_policy.pdf")
-        
-
-        # ---- Printing the policy number ---
-        policy_locator = page.locator("text=Policy #:")
-        policy_locator.wait_for()
-        policy_text = policy_locator.text_content()
-        policy_number = policy_text.replace("Policy #:", "").strip()
-        print("Policy Number:", policy_number)
         
         print("Policy is Issued and Schedule letter downloaded successfully.")
 

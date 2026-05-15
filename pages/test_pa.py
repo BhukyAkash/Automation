@@ -30,8 +30,8 @@ def test_PA(page):
         page.get_by_role("option", name="Class 2").click()
 
         # ---- PRODUCT SELECTION ----
-        selected_title = "Personal Accident Safe"    
-        #selected_title = "PA Shield"
+        #selected_title = "Personal Accident Safe"    
+        selected_title = "PA Shield"
         page.locator("[formcontrolname='paProducts']").click()
         page.get_by_role("option", name=selected_title).click()
         print("Selected Product:", selected_title)

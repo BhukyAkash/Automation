@@ -45,6 +45,10 @@ def test_pc_motor(page):
 
         # ========== SECOND SCREEN ==========
 
+        # ---- COVERAGE TYPE (read default) ----
+        selected_coverage = page.locator("#mat-select-value-9 span.mat-select-min-line").inner_text().strip()
+        print("Default Coverage type: ", selected_coverage)
+
         # ---- COVERAGE TYPE ----
         page.locator("#mat-select-value-9").click()
         if vehicle_age >= 20:
@@ -206,7 +210,7 @@ def test_pc_motor(page):
         ws.cell(row=row, column=7).value = policy_number     # Column G - Policy Number
         ws.cell(row=row, column=8).value = inception_date_excel       
 
-        # ---- Auto-fill Column I & J from previous row (like Ctrl+D) ----
+        # ---- Auto-fill Column I & J from previous row  ----
         if row > 2: 
             prev_col_b = ws.cell(row=row - 1, column=2).value   # Column B
             prev_col_i = ws.cell(row=row - 1, column=9).value   # Column I

@@ -1,11 +1,11 @@
 import os
 import traceback
-from base_login import incep_date, issue_policy, login, navigation, cv_moto, manager_approval
+from base_login import incep_date, issue_policy, login, navigation, cv_moto
 from excel_utils import get_vehicle_data
 from datetime import datetime
+from nstp_flow import nstp_flow
 from openpyxl import Workbook, load_workbook
 from test_mail import send_email
-
 
 def test_cv_motor(page):
 
@@ -63,7 +63,7 @@ def test_cv_motor(page):
         # ---- Seating Capacity ----
         page.locator("mat-form-field").filter(has_text="Seating Capacity *").locator("#seatCapacity").fill("5")
         # ---- Carrying Capacity ----
-        page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("11")
+        page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("20")
 
         page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-84").click()
         page.get_by_role("option", name="kg").click()
@@ -115,7 +115,7 @@ def test_cv_motor(page):
         page.wait_for_timeout(5000)
         
         # ========== THIRD SCREEN ==== PH Details ======
-
+        
         # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
         try:
             yes_button = page.get_by_role("button", name="Yes").first
@@ -156,7 +156,7 @@ def test_cv_motor(page):
         if address_save.is_visible():
             address_save.click()
 
-        # ---- DECLARATION STATEMENTS ----
+        # ---- Declaration Statements ----
         page.get_by_text("We respect your privacy and").click()
         page.get_by_text("I hereby confirm that I have").click()
 
@@ -165,27 +165,8 @@ def test_cv_motor(page):
         quote_number = quote_text.strip()
         print("Quote Number:", quote_number)
 
-        # ===== THIRD SCREEN FLOW =====
-
-        submit_approval_btn = page.get_by_role("button", name="Submit for TPM Staff Approval")
-        generate_quote_btn = page.get_by_role("button", name="Generate Quote")
-
-        # ---- Approval Flow ----
-        if submit_approval_btn.is_visible():
-            submit_approval_btn.click()
-            print("Clicked on Submit for TPM Staff Approval button")
-            page.wait_for_timeout(17000)
-
-            # ---- Incognito Session ----
-            browser = page.context.browser
-            manager_page = browser.new_context().new_page()
-            manager_page.goto(f"https://agent-uat.tuneinsurance.com/#/qms/quote/motor/rcv/cover-details?edit=true&quoteNr={quote_number}")
-
-            manager_approval(manager_page)
-
-            page.wait_for_timeout(10000)
-            page.get_by_role("button", name="Back").click()
-            page.wait_for_timeout(3000)
+        # ====== NSTP FLOW FUNCTION CALL ======
+        generate_quote_btn = nstp_flow(page, quote_number, vehicle_type="cv")
 
         # ---- Generate Quote Flow ----
         if generate_quote_btn.is_visible():
@@ -207,6 +188,8 @@ def test_cv_motor(page):
             page.get_by_role("button", name="Submit").click()
         download = download_info.value
         download.save_as("downloads/CV_policy.pdf")
+
+        print("Policy is Issued and Schedule letter downloaded successfully.")
 
         
         # --------- SAVE TO EXCEL ---------

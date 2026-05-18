@@ -37,16 +37,12 @@ def incep_date(page):
         print("Default Inception Date: ", inception_date)
     else:
         print("Inception Date is blank, setting today's date")
-
         # today date
         today = datetime.today()
-
         # Angular Material aria-label format
         aria_date = today.strftime("%B %d, %Y").replace(" 0", " ")
-
         # Open calendar
-        page.locator("mat-form-field").filter(has_text="Inception Date") .get_by_label("Open calendar").click()
-        
+        page.locator("mat-form-field").filter(has_text="Inception Date") .get_by_label("Open calendar").click()   
         # Select today
         page.get_by_role("gridcell", name=aria_date).click()
         inception_date = today.strftime("%d-%m-%Y")
@@ -59,14 +55,15 @@ def manager_approval(manager_page):
     manager_page.wait_for_timeout(30000)
     # === Approve the quote ===
     manager_page.get_by_role("button", name="Accept & Process").click()
+    manager_page.wait_for_timeout(10000)
     manager_page.close()
-
+    
 def issue_policy(page):
         # === PROCEED TO POLICY ISSUANCE ===
         page.get_by_role("button", name="Proceed to Policy Issuance").click()
 
         # ==== POLICY ISSUANCE ====
-        page.get_by_role("button", name="Issue Policy").click()
+        #page.get_by_role("button", name="Issue Policy").click()
         print("Issue Policy button clicked")
         page.wait_for_timeout(30000)
 

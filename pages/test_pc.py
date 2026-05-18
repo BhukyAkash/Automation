@@ -2,6 +2,7 @@ import os
 from base_login import incep_date, issue_policy, login, navigation, pc_moto
 from excel_utils import get_vehicle_data
 from datetime import datetime
+from nstp_flow import nstp_flow
 from openpyxl import Workbook, load_workbook
 from test_mail import send_email
 
@@ -129,6 +130,7 @@ def test_pc_motor(page):
         address_save = page.locator("button#save")
         if address_save.is_visible():
             address_save.click()
+            page.locator("div.box-card").nth(1).click()
         
         # ---- Garage Types ----
         page.locator(".mat-select-placeholder").first.click()
@@ -138,18 +140,22 @@ def test_pc_motor(page):
         page.locator(".mat-select-placeholder").click()
         page.get_by_role("option", name="Driver’s Side Airbags (1)").click()
 
-        # Locate the element that contains the quote reference
+        # ---- Declaration Statements ----
+        page.get_by_text("We respect your privacy and").click()
+        page.get_by_text("I hereby confirm that I have").click()
+
+        # ---- Get Quote Number -----
         quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
         quote_number = quote_text.strip()
         print("Quote Number:", quote_number)
 
-        # ---- DECLARATION STATEMENTS ----
-        page.get_by_text("We respect your privacy and").click()
-        page.get_by_text("I hereby confirm that I have").click()
+        # ====== NSTP FLOW FUNCTION CALL ======
+        generate_quote_btn = nstp_flow(page, quote_number, vehicle_type="pc")
 
-        # ---- GENERATE & DOWNLOAD QUOTE -----
-        page.get_by_role("button", name="Generate Quote").click()
-        page.wait_for_timeout(5000)
+        # ---- Generate Quote Flow ----
+        if generate_quote_btn.is_visible():
+            generate_quote_btn.click()
+            print("Clicked on Generate Quote button")
 
         with page.expect_download() as download_info:
             page.get_by_role("button", name="Submit").click()

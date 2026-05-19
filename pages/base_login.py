@@ -22,7 +22,7 @@ def cv_moto(page):
     page.get_by_role("heading", name="Reg. Commercial Vehicle").click()
     page.get_by_role("button", name="Next").click()
     page.get_by_role("textbox").click()
-    
+
 def navi_pa(page):
     page.get_by_text("request_quote QMS Quotation").click()
     page.get_by_role("button", name="New Quote").click()
@@ -30,6 +30,21 @@ def navi_pa(page):
     page.get_by_role("heading", name="Personal Accident").click()
     page.get_by_role("button", name="Next").click()
 
+def endo_navigation(page, product):
+    page.get_by_text("Policy Servicing (Endorsement)").click()
+    print("Navigated to Endorsement Tile")
+    # ---- Endorsement Product Selection ----
+    page.locator(".mat-select-placeholder").click()
+
+    # ---- Motor ----
+    if product.lower() == "motor":
+        page.get_by_role("option", name="Motor").click()
+        print("Performing Motor Endorsement")
+
+    # ---- Personal Accident ----
+    elif product.lower() == "pa":
+        page.get_by_role("option", name="Personal Accident").click()
+        print("Performing Personal Accident Endorsement")
 
 def incep_date(page):
     inception_date = page.locator("input#inceptionDate").input_value().strip()
@@ -57,7 +72,7 @@ def manager_approval(manager_page):
     manager_page.get_by_role("button", name="Accept & Process").click()
     manager_page.wait_for_timeout(10000)
     manager_page.close()
-    
+
 def issue_policy(page):
         # === PROCEED TO POLICY ISSUANCE ===
         page.get_by_role("button", name="Proceed to Policy Issuance").click()

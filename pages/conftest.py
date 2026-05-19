@@ -3,6 +3,16 @@ from playwright.sync_api import sync_playwright
 import os
 
 
+# -------- Custom Command Line Arguments --------
+def pytest_addoption(parser):
+    parser.addoption(
+        "--product",
+        action="store",
+        default="motor",
+        help="Product type: Motor or Personal Accident"
+    )
+
+# -------- Playwright Fixture with Tracing --------
 @pytest.fixture(scope="function")
 def page(request):
     os.makedirs("traces", exist_ok=True)

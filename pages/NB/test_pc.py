@@ -1,10 +1,17 @@
+import sys
 import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from base_login import incep_date, issue_policy, login, navigation, pc_moto
 from excel_utils import get_vehicle_data
 from datetime import datetime
 from nstp_flow import nstp_flow
 from openpyxl import Workbook, load_workbook
 from test_mail import send_email
+
+# ---- Path References ----
+BASE_DIR = os.path.join(os.path.dirname(__file__), "..")               # D:\Automation\pages
+DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Automation\pages\NB\downloads
 
 
 def test_pc_motor(page):
@@ -138,7 +145,7 @@ def test_pc_motor(page):
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="No Alarm(WITHOUT MECHANICAL").click()
         page.locator(".mat-select-placeholder").click()
-        page.get_by_role("option", name="Driver’s Side Airbags (1)").click()
+        page.get_by_role("option", name="Driver's Side Airbags (1)").click()
 
         # ---- Declaration Statements ----
         page.get_by_text("We respect your privacy and").click()
@@ -160,7 +167,7 @@ def test_pc_motor(page):
         with page.expect_download() as download_info:
             page.get_by_role("button", name="Submit").click()
         download = download_info.value
-        download.save_as("downloads/PC_quote.pdf")
+        download.save_as(os.path.join(DOWNLOADS_DIR, "PC_quote.pdf"))
         print("Quote PDF downloaded successfully.")
 
         # ==== Issue Policy function ====
@@ -173,13 +180,13 @@ def test_pc_motor(page):
         with page.expect_download() as download_info:
             page.get_by_role("button", name="Submit").click()
         download = download_info.value
-        download.save_as("downloads/PC_policy.pdf")
+        download.save_as(os.path.join(DOWNLOADS_DIR, "PC_policy.pdf"))
         
         print("Policy is Issued and Schedule letter downloaded successfully.")
 
         # --------- SAVE TO EXCEL ---------
         
-        file_path = "UATStability.xlsx"
+        file_path = os.path.join(BASE_DIR, "UATStability.xlsx")
 
         # Load or create workbook
         if os.path.exists(file_path):
@@ -239,7 +246,6 @@ def test_pc_motor(page):
             send_email()
         except Exception as e:
             print("Email failed:", e)
-
 
     finally:
         page.get_by_text("playwright", exact=True).click()

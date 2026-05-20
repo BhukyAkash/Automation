@@ -1,9 +1,16 @@
+import sys
 import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from openpyxl import Workbook, load_workbook
 from excel_utils import get_vehicle_data
 from datetime import datetime
 from base_login import incep_date, login, navigation, pc_moto, issue_policy
 from test_mail import send_email
+
+# ---- Path References ----
+BASE_DIR = os.path.join(os.path.dirname(__file__), "..")               # D:\Automation\pages
+DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Automation\pages\NB\downloads
 
 def test_mc_motor(page):
 
@@ -171,7 +178,7 @@ def test_mc_motor(page):
         with page.expect_download() as download_info:
             page.get_by_role("button", name="Submit").click()
         download = download_info.value
-        download.save_as("downloads/MC_quote.pdf")
+        download.save_as(os.path.join(DOWNLOADS_DIR, "MC_quote.pdf"))
         print("Quote PDF downloaded successfully.")
 
         # ==== Issue Policy function ====
@@ -184,13 +191,13 @@ def test_mc_motor(page):
         with page.expect_download() as download_info:
             page.get_by_role("button", name="Submit").click()
         download = download_info.value
-        download.save_as("downloads/MC_policy.pdf")
+        download.save_as(os.path.join(DOWNLOADS_DIR, "MC_policy.pdf"))
         
         print("Policy is Issued and Schedule letter downloaded successfully.")
 
         # --------- SAVE TO EXCEL ---------
         
-        file_path = "UATStability.xlsx"
+        file_path = os.path.join(BASE_DIR, "UATStability.xlsx")
 
         # Load or create workbook
         if os.path.exists(file_path):
@@ -225,7 +232,7 @@ def test_mc_motor(page):
         ws.cell(row=row, column=5).value = selected_coverage     # Column E - Coverage Type
         ws.cell(row=row, column=6).value = quote_number          # Column F - Quote Number
         ws.cell(row=row, column=7).value = policy_number         # Column G - Policy Number
-        ws.cell(row=row, column=8).value = inception_date_excel       # Column H
+        ws.cell(row=row, column=8).value = inception_date_excel  # Column H
 
         # ---- Auto-fill Column I & J from previous row (like Ctrl+D) ----
         if row > 2:

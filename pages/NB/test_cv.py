@@ -1,4 +1,7 @@
+import sys
 import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 import traceback
 from base_login import incep_date, issue_policy, login, navigation, cv_moto
 from excel_utils import get_vehicle_data
@@ -7,10 +10,14 @@ from nstp_flow import nstp_flow
 from openpyxl import Workbook, load_workbook
 from test_mail import send_email
 
+# ---- Path References ----
+BASE_DIR = os.path.join(os.path.dirname(__file__), "..")               # D:\Automation\pages
+DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Automation\pages\NB\downloads
+
 def test_cv_motor(page):
 
     try:
-        page.wait_for_load_state
+        page.wait_for_load_state()
         login(page)
         navigation(page)
         cv_moto(page)
@@ -44,7 +51,6 @@ def test_cv_motor(page):
         page.get_by_role("option", name="F16").click()
 
         # ---- Year of Manufacture ----
-        #page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-74").click()
         page.locator("mat-form-field", has_text="Year of Manufacture").click()
         page.get_by_role("option", name="2015").click()
         page.wait_for_timeout(2000)
@@ -67,7 +73,6 @@ def test_cv_motor(page):
 
         page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-84").click()
         page.get_by_role("option", name="kg").click()
-        #page.get_by_role("option", name="Tonnes").click()
 
         page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-86").click()
         page.get_by_role("option", name="Beverages Bottles").click()
@@ -175,7 +180,7 @@ def test_cv_motor(page):
 
             with page.expect_download() as download_info:
                 page.get_by_role("button", name="Submit").click()
-            download_info.value.save_as("downloads/CV_quote.pdf")
+            download_info.value.save_as(os.path.join(DOWNLOADS_DIR, "CV_quote.pdf"))
 
         # ==== Issue Policy function ====
         policy_number = issue_policy(page)
@@ -187,14 +192,14 @@ def test_cv_motor(page):
         with page.expect_download() as download_info:
             page.get_by_role("button", name="Submit").click()
         download = download_info.value
-        download.save_as("downloads/CV_policy.pdf")
+        download.save_as(os.path.join(DOWNLOADS_DIR, "CV_policy.pdf"))
 
         print("Policy is Issued and Schedule letter downloaded successfully.")
 
         
         # --------- SAVE TO EXCEL ---------
         
-        file_path = "UATStability.xlsx"
+        file_path = os.path.join(BASE_DIR, "UATStability.xlsx")
 
         # Load or create workbook
         if os.path.exists(file_path):
@@ -244,7 +249,6 @@ def test_cv_motor(page):
             if prev_col_j:
                 ws.cell(row=row, column=10).value = prev_col_j  # Column J
 
-
         # ---- Save file ----
         wb.save(file_path)
 
@@ -257,7 +261,6 @@ def test_cv_motor(page):
             print("Email failed:", e)
 
     except Exception as e:
-    # ADD THIS - captures the real error
         print("Test failed:", traceback.format_exc())
 
     finally:

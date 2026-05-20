@@ -15,10 +15,11 @@ def pytest_addoption(parser):
 # -------- Playwright Fixture with Tracing --------
 @pytest.fixture(scope="function")
 def page(request):
-    os.makedirs("traces", exist_ok=True)
+    TRACES_DIR = os.path.join(os.path.dirname(__file__), "traces")
+    os.makedirs(TRACES_DIR, exist_ok=True)
 
     test_file = os.path.splitext(os.path.basename(request.node.fspath))[0]
-    trace_path = os.path.abspath(f"traces/{test_file}.zip")
+    trace_path = os.path.join(TRACES_DIR, f"{test_file}.zip")
 
     print(f"\n[TRACE] Saving trace to: {trace_path}")
 

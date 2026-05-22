@@ -78,7 +78,7 @@ def issue_policy(page):
         page.get_by_role("button", name="Proceed to Policy Issuance").click()
 
         # ==== POLICY ISSUANCE ====
-        #page.get_by_role("button", name="Issue Policy").click()
+        page.get_by_role("button", name="Issue Policy").click()
         print("Issue Policy button clicked")
         page.wait_for_timeout(30000)
 

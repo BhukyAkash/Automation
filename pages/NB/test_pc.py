@@ -35,6 +35,27 @@ def test_pc_motor(page):
         # ---- Vehicle Search ----
         page.get_by_role("button", name="search Vehicle Search").click()
         page.wait_for_timeout(5000)
+
+        # --- Engine Capacity field ----
+        cc_input = page.locator('input#cc')
+        if cc_input.is_visible():
+            current_value = cc_input.input_value().strip()
+            if current_value == "" or current_value == "0":
+                cc_input.dblclick()
+                cc_input.fill("1200")
+            else:
+                print(f"Engine Capacity: {current_value}")
+
+        # --- Seating Capacity field ----
+        seat_input = page.locator('input#seatCapacity')
+
+        if seat_input.is_visible():
+            current_value = seat_input.input_value().strip()
+            if current_value == "" or current_value == "0":
+                seat_input.dblclick()
+                seat_input.fill("2")
+            else:
+                print(f"Seating Capacity already filled: {current_value}")
         
         # ---- Vehicle Age (to determine coverage type) ---- 
         vehicle_age_locator = page.locator("mat-form-field").filter(has_text="Vehicle Age").locator("#vehicleAge")
@@ -146,7 +167,7 @@ def test_pc_motor(page):
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="No Alarm(WITHOUT MECHANICAL").click()
         page.locator(".mat-select-placeholder").click()
-        page.get_by_role("option", name="Driver's Side Airbags (1)").click()
+        page.get_by_role("option", name="ABS(No Airbags)").click()
 
         # ---- Declaration Statements ----
         page.get_by_text("We respect your privacy and").click()

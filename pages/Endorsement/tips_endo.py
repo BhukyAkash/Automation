@@ -11,6 +11,8 @@ def endorsement(page, request):
     # ---- Get Policy Number ----
     policy_number, motor_type, policy_date = get_policy_number(product)
 
+    print("====================== Endorsement Starts ==================")
+
     if policy_number is None:
         print(f"No {product.upper()} policy found for today ({date.today()}). Skipping endorsement.")
         pytest.skip(f"No {product.upper()} policy found for today. Skipping endorsement.")

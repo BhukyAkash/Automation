@@ -15,6 +15,7 @@ DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Autom
 def test_mc_motor(page):
 
     try:
+        print("====================== Issuance of MC policy ==================")
         login(page)
         navigation(page)
         pc_moto(page)
@@ -253,7 +254,10 @@ def test_mc_motor(page):
         print("In Excel, Quote and Policy numbers captured successfully")
 
         # -------- SEND EMAIL ---------
-        send_email()
+        try:
+            send_email()
+        except Exception as e:
+            print("Email failed:", e)
 
     finally:
         page.bring_to_front()

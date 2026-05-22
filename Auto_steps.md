@@ -62,6 +62,8 @@ git add <file name>
 git commit -m "Message"
 git push
 git ls-files
+del /s /q *.pyc
+rmdir /s /q .pytest_cache
 
 git update-index --skip-wroktree <filename>   -    command to ignore PUSH of file
 git ls-files -v | findstr "^S"                -    for Git ignored files

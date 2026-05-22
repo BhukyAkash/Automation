@@ -15,6 +15,7 @@ DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Autom
 def test_PA(page):
 
     try:
+        print("===================== Issuance of PA policy ==================")
         login(page)
         navi_pa(page)
         print("User successfully logged in and navigated to Personal Accident section")
@@ -37,8 +38,8 @@ def test_PA(page):
         page.get_by_role("option", name="Class 2").click()
 
         # ---- PRODUCT SELECTION ----
-        #selected_title = "Personal Accident Safe"    
-        selected_title = "PA Shield"
+        selected_title = "Personal Accident Safe"    
+        #selected_title = "PA Shield"
         page.locator("[formcontrolname='paProducts']").click()
         page.get_by_role("option", name=selected_title).click()
         print("Selected Product:", selected_title)

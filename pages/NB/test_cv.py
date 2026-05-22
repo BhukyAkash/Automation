@@ -2,7 +2,6 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-import traceback
 from base_login import incep_date, issue_policy, login, navigation, cv_moto
 from excel_utils import get_vehicle_data
 from datetime import datetime
@@ -17,6 +16,7 @@ DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Autom
 def test_cv_motor(page):
 
     try:
+        print("====================== Issuance of CV policy ==================")
         page.wait_for_load_state()
         login(page)
         navigation(page)
@@ -260,8 +260,6 @@ def test_cv_motor(page):
         except Exception as e:
             print("Email failed:", e)
 
-    except Exception as e:
-        print("Test failed:", traceback.format_exc())
 
     finally:
         page.get_by_text("playwright", exact=True).click()

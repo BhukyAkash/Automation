@@ -17,6 +17,7 @@ DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Autom
 def test_pc_motor(page):
 
     try:
+        print("====================== Issuance of PC policy ==================")
         login(page)
         navigation(page)
         pc_moto(page)

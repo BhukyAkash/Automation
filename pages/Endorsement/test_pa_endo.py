@@ -1,6 +1,7 @@
-import pytest
 from tips_endo import endorsement
 
+
+#Run Command: pytest -s endorsement\test_pa_endo.py --product=pa
 def test_pa(page, request):
     try:
         endorsement(page, request)

@@ -30,5 +30,4 @@ def endorsement(page, request):
     # ---- Select Policy ----
     page.locator(".d-flex.align-items-center.ms-3 > div > .d-flex.align-items-center.justify-content-between").click()
     page.get_by_role("button", name="Next", exact=True).click()
-    print("Endorsement first screen")
     page.get_by_text("Confirm this is the policy to").click()

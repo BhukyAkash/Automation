@@ -30,7 +30,7 @@ def test_pc_motor(page):
 
         # ---- Place of Use ----
         page.locator(".mat-select-placeholder").click()
-        page.get_by_role("option", name="Johor").click()
+        page.get_by_role("option", name="Melaka").click()
 
         # ---- Vehicle Search ----
         page.get_by_role("button", name="search Vehicle Search").click()
@@ -55,7 +55,7 @@ def test_pc_motor(page):
                 seat_input.dblclick()
                 seat_input.fill("2")
             else:
-                print(f"Seating Capacity already filled: {current_value}")
+                print(f"Seating Capacity: {current_value}")
         
         # ---- Vehicle Age (to determine coverage type) ---- 
         vehicle_age_locator = page.locator("mat-form-field").filter(has_text="Vehicle Age").locator("#vehicleAge")

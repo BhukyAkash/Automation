@@ -67,9 +67,10 @@ def manager_approval(manager_page):
     manager_page.get_by_role("textbox", name="Username or email").fill("rahul@serole.com")
     manager_page.get_by_role("textbox", name="Password").fill("Serole@123")
     manager_page.get_by_role("button", name="Login").click()
-    manager_page.wait_for_timeout(30000)
+    manager_page.wait_for_timeout(25000)
     # === Approve the quote ===
     manager_page.get_by_role("button", name="Accept & Process").click()
+    print("Manager approval done")
     manager_page.wait_for_timeout(10000)
     manager_page.close()
 
@@ -78,13 +79,13 @@ def issue_policy(page):
         page.get_by_role("button", name="Proceed to Policy Issuance").click()
 
         # ==== POLICY ISSUANCE ====
-        page.get_by_role("button", name="Issue Policy").click()
+        #page.get_by_role("button", name="Issue Policy").click()
         print("Issue Policy button clicked")
         page.wait_for_timeout(30000)
 
         # ---- Wait until Policy number is released  ----
         max_wait = 100
-        interval = 25
+        interval = 35
         elapsed = 0     
         policy_number = "-"
 

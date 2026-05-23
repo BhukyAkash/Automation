@@ -18,7 +18,7 @@ def nstp_flow(page, quote_number, vehicle_type="cv"):
                 upload_later.click()
                 page.locator("dx-evidence-upload").get_by_role("textbox").click()
                 page.locator("dx-evidence-upload").get_by_role("textbox").fill("will upload documents later")
-                print("Upload later option selected")
+                print("NSTP - Upload later of Documents")
             else:
                 print("STP case - Upload later disabled, skipping")
         except:
@@ -43,6 +43,7 @@ def nstp_flow(page, quote_number, vehicle_type="cv"):
 
         # ---- Back button ----
         page.get_by_role("button", name="Back").click()
+        print("Navigated to Back for Quote letter")
         page.wait_for_timeout(3000)
 
     return generate_quote_btn

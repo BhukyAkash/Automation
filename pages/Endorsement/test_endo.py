@@ -12,8 +12,13 @@ def test_motor_endo(page, request):
         print("Expiry Date:", expiry_date)
 
         # ---- Endorsement Reason ----
-        reason = "Extend Period of Insurance"
-        page.get_by_text(reason).click()
+        try:
+            reason = "Extend Period of Insurance"
+            page.get_by_text(reason).click()
+        except:
+            reason = "Extend Expiry Date for Roadtax"
+            page.get_by_text(reason).click()
+
         print(f"Endorsement Reason: {reason}")
 
         # --- Extending Period of Insurance ---
@@ -42,18 +47,25 @@ def test_motor_endo(page, request):
         print("Extended period of Insurance till:", new_date.strftime("%d/%m/%Y"))
 
         page.get_by_role("button", name="Validate Owner ID # & NCD%").click()
+        
+        # --- Declaration Statement ---
+        page.get_by_text("I/We declare that the Policy Information Provided").click()
+
+        # --- Save & Next ---
         page.get_by_role("button", name="Save").click()
         print("Save Button Clicked")
         page.get_by_role("button", name="Next", exact=True).click()
         print("Next Button Clicked")
 
-        page.get_by_role("button", name="Submit for Processing").click()
+        # --- Quote Reference Number ---
+        quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
+        quote_number = quote_text.strip()
+        print("Quote Number:", quote_number)
+
         page.get_by_role("button", name="Proceed").click()
+        #page.get_by_role("button", name="Submit for Processing").click()
 
-
-        page.pause()
-
-
+        print("Endorsement performed successfully")
 
     finally:
         page.bring_to_front()

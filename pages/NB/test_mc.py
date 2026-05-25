@@ -78,10 +78,8 @@ def test_mc_motor(page):
             else:
                 page.get_by_role("option", name="Comprehensive").click()
 
-            selected_coverage = page.locator("#mat-select-value-9 span.mat-select-min-line").inner_text().strip()
-            print("Selected Coverage type: ", selected_coverage)
-        else:
-            print("Default Coverage")
+        selected_coverage = page.locator("#mat-select-value-9 span.mat-select-min-line").inner_text().strip()
+        print("Selected Coverage type: ", selected_coverage)
 
         # ---- COVERAGE DATE -----
         incep_date(page)

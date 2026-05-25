@@ -26,8 +26,8 @@ def cv_moto(page):
 def navi_pa(page):
     page.get_by_text("request_quote QMS Quotation").click()
     page.get_by_role("button", name="New Quote").click()
-    page.get_by_role("heading", name="Accident & Health").click()
-    page.get_by_role("heading", name="Personal Accident").click()
+    page.get_by_role("heading", name="Personal Accident, Travel & Health").click()
+    page.get_by_role("heading", name="Personal Accident", exact=True).click()
     page.get_by_role("button", name="Next").click()
 
 def endo_navigation(page, product):
@@ -79,7 +79,7 @@ def issue_policy(page):
         page.get_by_role("button", name="Proceed to Policy Issuance").click()
 
         # ==== POLICY ISSUANCE ====
-        #page.get_by_role("button", name="Issue Policy").click()
+        page.get_by_role("button", name="Issue Policy").click()
         print("Issue Policy button clicked")
         page.wait_for_timeout(30000)
 

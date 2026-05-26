@@ -53,6 +53,12 @@ def test_PA(page):
         page.locator("mat-radio-button:has-text('No')").nth(1).click()
         print("Weekly Benefit not selected")
 
+        '''# ---- INCEPTION DATE ----
+        date_field = page.locator("input#inceptionDate")
+        date_field.click()
+        date_field.press("Control+A")
+        date_field.fill("01-06-2026")'''
+
         page.locator("#dx-checkbox-1 > .mat-checkbox-layout > .mat-checkbox-inner-container").click()
 
         # ---- SAVE & NEXT ----

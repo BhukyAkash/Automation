@@ -13,8 +13,8 @@ def test_pa(page, request):
         policy_number = endorsement(page, request)
 
         # --- Endorsement Reason Selection ---
-        er.class_change(page)
-        # er.SI_change(page)
+        #er.class_change(page)
+        er.SI_change(page)
 
         # --- Endorsement Release ---
         endo_quote = er.endo_release(page)

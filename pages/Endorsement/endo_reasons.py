@@ -29,7 +29,7 @@ def SI_change(page):
         page.get_by_role("option", name="Change Basis of SI").click()
 
         # --- Sum Insured Selection ---
-        page.locator(".mat-select-placeholder").click()
+        page.get_by_role("combobox", name="Plan Sum Insured").click()
         page.get_by_role("option", name="250,000").click()
 
 # --- Extend Period of Insurance ---
@@ -99,6 +99,7 @@ def endo_release(page):
 
         return endo_quote
 
+# --- Save Endorsement Quote Reference to Excel ----
 def save_excel(policy_number, endo_quote):
     # ====== Save to Excel ======
         BASE_DIR = os.path.join(os.path.dirname(__file__), "..")  # D:\Automation\pages

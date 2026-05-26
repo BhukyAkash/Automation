@@ -1,71 +1,37 @@
-from tips_endo import endorsement
-from datetime import datetime, timedelta
+import os
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from tips_endo import endorsement
+import endo_reasons as er
+
+DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 
 #Run Command: pytest -s endorsement\test_endo.py
 def test_motor_endo(page, request):
     try:
-        endorsement(page, request)
+        policy_number = endorsement(page, request)
 
-        # --- Expiry Date of Policy ---
-        expiry_date = page.locator(".col-md-3").filter(has_text="Expiry Date").locator("span.ng-star-inserted").first.inner_text()
-        print("Expiry Date:", expiry_date)
+        # --- Endrsement Reason ---
+        er.extend_poi(page)
 
-        # ---- Endorsement Reason ----
-        try:
-            reason = "Extend Period of Insurance"
-            page.get_by_text(reason).click()
-        except:
-            reason = "Extend Expiry Date for Roadtax"
-            page.get_by_text(reason).click()
+        # --- Endorsement Release ---
+        endo_quote = er.endo_release(page)
 
-        print(f"Endorsement Reason: {reason}")
+        # --- Download Endorsement Schedule ---
+        page.get_by_role("button", name="View Change Schedule").click()
+        page.locator("form").get_by_text("Download Endorsement Schedule").click()
 
-        # --- Extending Period of Insurance ---
-        expiry_date = datetime.strptime(expiry_date, "%d/%m/%Y")
+        with page.expect_download() as download_info:
+            page.get_by_role("button", name="Submit").click()
+        download = download_info.value
+        download.save_as(os.path.join(DOWNLOADS_DIR, "Motor_endo_schedule.pdf"))
 
-        # --- Add 2 months manually ---
-        month = expiry_date.month + 2
-        year = expiry_date.year + (month - 1) // 12
-        month = month % 12 or 12
-        new_date = expiry_date.replace(year=year, month=month)
-        
-        # ---- Open Calendar ----
-        page.locator("mat-form-field").filter(has_text="Expiry Date").get_by_label("Open calendar").click()
+        print("Endorsement Schedule downloaded successfully")
 
-        # --- Extended Date ----
-        while True:
-            header = page.locator("button.mat-calendar-period-button").inner_text()
-            current = datetime.strptime(header.strip().title(), "%b %Y")
-            if current.year == new_date.year and current.month == new_date.month:
-                break
-            page.locator("button.mat-calendar-next-button").click()
-            page.wait_for_timeout(300)
 
-        # --- Click the correct day ---
-        page.locator(f"button.mat-calendar-body-cell[aria-label='{new_date.strftime('%B')} {new_date.day}, {new_date.year}']").click()
-        print("Extended period of Insurance till:", new_date.strftime("%d/%m/%Y"))
-
-        page.get_by_role("button", name="Validate Owner ID # & NCD%").click()
-        
-        # --- Declaration Statement ---
-        page.get_by_text("I/We declare that the Policy Information Provided").click()
-
-        # --- Save & Next ---
-        page.get_by_role("button", name="Save").click()
-        print("Save Button Clicked")
-        page.get_by_role("button", name="Next", exact=True).click()
-        print("Next Button Clicked")
-
-        # --- Quote Reference Number ---
-        quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
-        quote_number = quote_text.strip()
-        print("Quote Number:", quote_number)
-
-        page.get_by_role("button", name="Proceed").click()
-        #page.get_by_role("button", name="Submit for Processing").click()
-
-        print("Endorsement performed successfully")
+        # ====== Save to Excel ======
+        er.save_excel(policy_number, endo_quote)
 
     finally:
         page.bring_to_front()

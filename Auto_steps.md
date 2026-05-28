@@ -2,9 +2,8 @@
 
 1. Install VS Code
 2. Install Python through MS Store
-3. mkdir playwright-python
-   cd playwright-python
-and also crate "tests" folder
+3. mkdir UAT
+   cd UAT
 
 In "playwright-python" folder create environment
 4. For Environment

@@ -33,8 +33,7 @@ def test_PA(page):
         page.locator("#dx-input-1").nth(1).fill("PERSONAL ACCIDENT")
 
         # ---- INTERNAL CLASSIFICATION ----
-        #page.locator("[formcontrolname='internalClassification']").click()
-        page.locator(".mat-select-placeholder").first.click()
+        page.locator("mat-form-field").filter(has_text="Occupation Class").locator("mat-select").click()
         page.get_by_role("option", name="Class 2").click()
 
         # ---- PRODUCT SELECTION ----
@@ -160,8 +159,9 @@ def test_PA(page):
         # ---- ISSUE POLICY & DOWNLOAD POLICY SCHEDULE ----
         page.get_by_role("button", name="Issue Policy").click()
         page.get_by_role("button", name="Accept & Proceed").click()
+        print("Issue Policy clicked, waiting for processing...")
         
-        page.wait_for_timeout(25000)
+        page.wait_for_timeout(30000)
         page.reload()
 
         # ---- Download the policy schedule ----

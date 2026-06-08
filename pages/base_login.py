@@ -9,6 +9,7 @@ def login(page):
 def navigation(page):
     page.get_by_text("request_quote QMS Quotation").click()
     page.get_by_role("button", name="New Quote").click()
+    page.wait_for_timeout(2000)
     page.get_by_role("heading", name="Motor").click()
 
 def pc_moto(page):
@@ -29,6 +30,13 @@ def navi_pa(page):
     page.get_by_role("heading", name="Personal Accident, Travel & Health").click()
     page.get_by_role("heading", name="Personal Accident", exact=True).click()
     page.get_by_role("button", name="Next").click()
+
+def navi_dental(page):
+    page.get_by_text("request_quote QMS Quotation").click()
+    page.get_by_role("button", name="New Quote").click()
+    page.get_by_role("heading",name="Personal Accident, Travel & Health").click()
+    page.get_by_role("heading",name="Dental Shield").click()
+    page.get_by_role("button",name="Next").click()
 
 def endo_navigation(page, product):
     page.get_by_text("Policy Servicing (Endorsement)").click()

@@ -6,6 +6,8 @@ from openpyxl import Workbook, load_workbook
 from excel_utils import get_vehicle_data
 from datetime import datetime
 from base_login import incep_date, login, navigation, pc_moto, issue_policy
+from extension import mc_extension
+from popup_utils import ask_popup
 from test_mail import send_email
 
 # ---- Path References ----
@@ -33,6 +35,27 @@ def test_mc_motor(page):
         # ---- Vehicle Search ----
         page.get_by_role("button", name="search Vehicle Search").click()
         page.wait_for_timeout(2000)
+
+        # --- Engine Capacity field ----
+        cc_input = page.locator('input#cc')
+        if cc_input.is_visible():
+            current_value = cc_input.input_value().strip()
+            if current_value == "" or current_value == "0":
+                cc_input.dblclick()
+                cc_input.fill("1200")
+            else:
+                print(f"Engine Capacity: {current_value}")
+
+        # --- Seating Capacity field ----
+        seat_input = page.locator('input#seatCapacity')
+
+        if seat_input.is_visible():
+            current_value = seat_input.input_value().strip()
+            if current_value == "" or current_value == "0":
+                seat_input.dblclick()
+                seat_input.fill("2")
+            else:
+                print(f"Seating Capacity: {current_value}")
 
         # ---- Vehicle Age from input (Screen 1) ----
         vehicle_age_text = ""
@@ -106,6 +129,21 @@ def test_mc_motor(page):
         page.locator("mat-form-field").filter(has_text="Name as per ID *").locator("#legalName").fill("Motor Cycle")
         page.get_by_role("button", name="search Validate Owner as per").click()
 
+        # ==== Multi Contract / Extensions ====
+        print("======== Extension Coverage Selection ========")
+
+        answer = ask_popup(
+            question="Do you want to explore Extensions screen?",
+            title="Extension Coverage Selection",
+        )
+
+        if answer == "yes":
+            mc_extension(page, selected_coverage)
+            print("Extensions added successfully")
+        else:
+            print("No Extensions Selected")
+
+        page.pause()
         # ---- NCD value ----
         page.wait_for_timeout(4000)
         ncd_value = page.locator("#currentNCD input.mat-input-element").input_value()

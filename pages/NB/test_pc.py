@@ -5,6 +5,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from base_login import incep_date, issue_policy, login, navigation, pc_moto
 from excel_utils import get_vehicle_data
 from datetime import datetime
+from popup_utils import ask_popup
+from extension import pc_extension
 from nstp_flow import nstp_flow
 from openpyxl import Workbook, load_workbook
 from test_mail import send_email
@@ -110,6 +112,22 @@ def test_pc_motor(page):
         #----NAME OF THE PH ----
         page.locator("mat-form-field").filter(has_text="Name as per ID *").locator("#legalName").fill("PC")
         page.get_by_role("button", name="search Validate Owner as per").click()
+
+        # ==== Multi Contract / Extensions ====
+        print("======== Extension Coverage Selection ========")
+
+        answer = ask_popup(
+            question="Do you want to explore Extensions screen?",
+            title="Extension Coverage Selection",
+        )
+
+        if answer == "yes":
+            pc_extension(page, selected_coverage)
+            print("Extensions added successfully")
+        else:
+            print("No Extensions Selected")
+
+        page.pause()
 
         # ---- NCD value ----
         page.wait_for_timeout(7000)

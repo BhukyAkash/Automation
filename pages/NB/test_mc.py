@@ -139,11 +139,10 @@ def test_mc_motor(page):
 
         if answer == "yes":
             mc_extension(page, selected_coverage)
-            print("Extensions added successfully")
+            print("===== Extensions added successfully ======")
         else:
             print("No Extensions Selected")
 
-        page.pause()
         # ---- NCD value ----
         page.wait_for_timeout(4000)
         ncd_value = page.locator("#currentNCD input.mat-input-element").input_value()
@@ -233,7 +232,6 @@ def test_mc_motor(page):
         print("Policy is Issued and Schedule letter downloaded successfully.")
 
         # --------- SAVE TO EXCEL ---------
-        
         file_path = os.path.join(BASE_DIR, "UATStability.xlsx")
 
         # Load or create workbook

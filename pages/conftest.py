@@ -15,17 +15,18 @@ def pytest_addoption(parser):
 # -------- Playwright Fixture with Tracing --------
 @pytest.fixture(scope="function")
 def page(request):
-    TRACES_DIR = os.path.join(os.path.dirname(__file__), "traces")
-    os.makedirs(TRACES_DIR, exist_ok=True)
+    # TRACES_DIR = os.path.join(os.path.dirname(__file__), "traces")
+    # os.makedirs(TRACES_DIR, exist_ok=True)
 
-    test_file = os.path.splitext(os.path.basename(request.node.fspath))[0]
-    trace_path = os.path.join(TRACES_DIR, f"{test_file}.zip")
+    # test_file = os.path.splitext(os.path.basename(request.node.fspath))[0]
+    # trace_path = os.path.join(TRACES_DIR, f"{test_file}.zip")
 
-    print(f"\n[TRACE] Saving trace to: {trace_path}")
+    # print(f"\n[TRACE] Saving trace to: {trace_path}")
 
     with sync_playwright() as playwright:
-        browser = playwright.firefox.launch(headless=False)
-        context = browser.new_context()
+        browser = playwright.chromium.launch(headless=False, args=["--start-maximized"])
+        context = browser.new_context(no_viewport=True)  
+        page = context.new_page()
 
         context.tracing.start(
             screenshots=True,
@@ -36,7 +37,7 @@ def page(request):
         page = context.new_page()
         yield page
 
-        context.tracing.stop(path=trace_path)
+        # context.tracing.stop(path=trace_path)
 
         context.clear_cookies()
         context.close()

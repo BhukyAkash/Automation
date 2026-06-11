@@ -3,7 +3,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from base_login import login, navi_pa
-from mykad_id import generate_mykad, child_mykad
+from mykad_id import generate_mykad, child_mykad, young_mykad
 from popup_utils import select_popup
 from test_mail import send_email
 from excel_file import pa_excel
@@ -37,14 +37,14 @@ def test_PA(page):
             "What occupation class do you want to select?",
             ["Class 1", "Class 2", "Full-Time Student", "Dependent"]
         )
-        print(f"Occupation Class selected: {class_ques}")
+        print(f"Occupation Class: {class_ques}")
 
-        if class_ques in ("Full-Time Student", "Dependent"):
+        if class_ques in ("Full-Time Student"):
             # ---- PROPOSER IS NOT THE INSURED ----
             page.get_by_text("Proposer is not the Insured").click()
 
             page.locator("#dx-input-3").nth(1).click()
-            mykad = child_mykad()
+            mykad = young_mykad()
             page.locator("#dx-input-3").nth(1).fill(mykad)
             print("Child MyKad ID: ", mykad)
 
@@ -85,6 +85,33 @@ def test_PA(page):
             # ---- WEEKLY BENEFIT ----
             page.locator("mat-radio-button:has-text('No')").nth(1).click()
             print("Weekly Benefit not selected")
+
+        elif class_ques in ("Dependent"):
+            # ---- PROPOSER IS NOT THE INSURED ----
+            page.get_by_text("Proposer is not the Insured").click()
+
+            page.locator("#dx-input-3").nth(1).click()
+            mykad = child_mykad()
+            page.locator("#dx-input-3").nth(1).fill(mykad)
+            print("Child MyKad ID: ", mykad)
+
+            page.locator("#dx-input-4").nth(1).click()
+            page.locator("#dx-input-4").nth(1).fill("Insurer")
+
+            # ---- INTERNAL CLASSIFICATION ----
+            page.locator(".mat-select-placeholder").first.click()
+            page.get_by_role("option", name=class_ques).click()
+
+            # ---- PRODUCT SELECTION ----
+            selected_title = "Personal Accident Safe"    
+            #selected_title = "PA Shield"
+            page.locator("[formcontrolname='paProducts']").click()
+            page.get_by_role("option", name=selected_title).click()
+            print("Selected Product:", selected_title)
+
+            # ---- PLAN TYPE ----
+            page.locator(".mat-select-placeholder").click()
+            page.get_by_role("option", name="200,000").click()
 
         '''# ---- INCEPTION DATE ----
         date_field = page.locator("input#inceptionDate")

@@ -3,7 +3,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from base_login import login, navi_dental
-from test_mykad_id import generate_mykad
+from mykad_id import generate_mykad
 from excel_file import dental
 
 # ---- Path References ----

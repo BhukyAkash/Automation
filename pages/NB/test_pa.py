@@ -35,7 +35,7 @@ def test_PA(page):
         # --- Occupation Class ----
         class_ques = select_popup(
             "What occupation class do you want to select?",
-            ["Full-Time Student", "Dependent", "Class 1", "Class 2"]
+            ["Class 1", "Class 2", "Full-Time Student", "Dependent"]
         )
         print(f"Occupation Class selected: {class_ques}")
 

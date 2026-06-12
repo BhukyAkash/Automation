@@ -17,10 +17,9 @@ DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Autom
 
 
 def test_pc_motor(page):
-
     try:
         print("====================== Issuance of PC policy ==================")
-        login(page)
+        username = login(page)
         navigation(page)
         pc_moto(page)
 
@@ -232,6 +231,7 @@ def test_pc_motor(page):
             print("Email failed:", e)
 
     finally:
-        page.get_by_text("playwright", exact=True).click()
+        page.get_by_text(username, exact=True).click()
         page.get_by_text("Sign Out", exact=True).click()
+        print("Logged out from the session")
         page.wait_for_timeout(15000)

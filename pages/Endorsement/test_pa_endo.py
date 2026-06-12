@@ -10,7 +10,7 @@ DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 # Run Command: pytest -s endorsement\test_pa_endo.py --product=pa
 def test_pa(page, request):
     try:
-        policy_number = endorsement(page, request)
+        policy_number, username = endorsement(page, request)
 
         # --- Endorsement Reason Selection ---
         #er.class_change(page)
@@ -36,6 +36,6 @@ def test_pa(page, request):
 
     finally:
         page.bring_to_front()
-        page.get_by_text("playwright", exact=True).click()
+        page.get_by_text(username, exact=True).click()
         page.get_by_text("Sign Out", exact=True).click()
         page.wait_for_timeout(15000)

@@ -10,10 +10,11 @@ DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 #Run Command: pytest -s endorsement\test_endo.py
 def test_motor_endo(page, request):
     try:
-        policy_number = endorsement(page, request)
+        policy_number, username = endorsement(page, request)
 
         # --- Endrsement Reason ---
         er.extend_poi(page)
+        #er.amend_coverage(page)
 
         # --- Endorsement Release ---
         endo_quote = er.endo_release(page)
@@ -35,6 +36,6 @@ def test_motor_endo(page, request):
 
     finally:
         page.bring_to_front()
-        page.get_by_text("playwright", exact=True).click()
+        page.get_by_text(username, exact=True).click()
         page.get_by_text("Sign Out", exact=True).click()
         page.wait_for_timeout(15000)

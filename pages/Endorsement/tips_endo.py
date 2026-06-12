@@ -20,7 +20,7 @@ def endorsement(page, request):
     print(f"Product: {product.upper()} - {motor_type} | Policy Number: {policy_number} | Date: {policy_date}")
 
     # ---- Login ----
-    login(page)
+    username = login(page)
     endo_navigation(page, product)
 
     # ---- Search Policy ----
@@ -37,4 +37,4 @@ def endorsement(page, request):
     page.get_by_role("button", name="Next", exact=True).click()
     page.get_by_text("Confirm this is the policy to").click()
 
-    return policy_number
+    return policy_number, username

@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from base_login import login, navi_dental
 from mykad_id import generate_mykad
-from excel_file import dental
+from excel_utils import dental
 
 # ---- Path References ----
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..")               # D:\Automation\pages
@@ -13,8 +13,9 @@ DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Autom
 def test_dental(page):
     try:
         print("\n===================== Issuance of Dental policy ==================")
-        login(page)
+        username = login(page)
         navi_dental(page)
+        print("Navigated to Dental")
 
         page.wait_for_timeout(5000)
 
@@ -103,11 +104,6 @@ def test_dental(page):
 
         page.wait_for_timeout(15000)
 
-        # ---- Printing the policy number ----
-        page.wait_for_selector("text=Policy #", timeout=30000)
-        policy_number = (page.locator("div.-second").filter(has_text="Policy #").locator("span").last.inner_text())
-        print("Policy Number:", policy_number)
-
         # ---- Download the policy schedule ----
         page.get_by_role("button", name="Download & Email Policy").click()
         page.get_by_text("Download Policy Schedule").click()
@@ -119,14 +115,19 @@ def test_dental(page):
             page.get_by_role("button", name="Send").click()
         download = download_info.value
         download.save_as(os.path.join(DOWNLOADS_DIR, "Dental_policy.pdf"))
-
+        page.get_by_text("close", exact=True).click()
         print("Policy Schedule PDF downloaded successfully")
+
+        # ---- Printing the policy number ----
+        page.wait_for_selector("text=Policy #", timeout=30000)
+        policy_number = (page.locator("div.-second").filter(has_text="Policy #").locator("span").last.inner_text())
+        print("Policy Number:", policy_number)
 
         # --- Save to Excel ----
         dental(quote_number, policy_number)
 
     finally:
-        page.wait_for_timeout(15000)
-        page.get_by_text("playwright", exact=True).click()
+        page.get_by_text(username, exact=True).click()
         page.get_by_text("Sign Out", exact=True).click()
-        page.wait_for_timeout(7000)
+        print("Terminated the session")
+        page.wait_for_timeout(15000)

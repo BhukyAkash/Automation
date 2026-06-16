@@ -2,23 +2,35 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from base_login import login, navi_pa
+import pytest
+from base_login import login, navi_pa, pa_prem
 from mykad_id import generate_mykad, child_mykad, young_mykad
-from popup_utils import select_popup
 from test_mail import send_email
-from excel_file import pa_excel
+from excel_utils import pa_excel, get_pa_data
 
 # ---- Path References ----
-BASE_DIR = os.path.join(os.path.dirname(__file__), "..")               # D:\Automation\pages
-DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Automation\pages\NB\downloads
+BASE_DIR = os.path.join(os.path.dirname(__file__), "..")
+DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 
-def test_PA(page):
+@pytest.mark.parametrize("pa_row", [2])
+
+def test_PA(page, pa_row):
 
     try:
-        print("===================== Issuance of PA policy ==================")
-        login(page)
+        print("\n===================== Issuance of PA policy ==================")
+        username = login(page)
         navi_pa(page)
         print("User successfully logged in and navigated to Personal Accident section")
+
+        # ---- Read test data from PA sheet ----
+        pa_data = get_pa_data(row=pa_row)
+        class_ques     = pa_data["occupation_cls"]   # e.g. "Class 1"
+        selected_title = pa_data["pa_product"]        # e.g. "Personal Accident Safe"
+        plan_type      = pa_data["sum_insured"]       # e.g. "200,000"
+
+        print(f"Occupation Class  : {class_ques}")
+        print(f"PA Product        : {selected_title}")
+        print(f"Sum Insured (Plan): {plan_type}")
 
         # ========= FIRST SCREEN ===========
 
@@ -26,27 +38,21 @@ def test_PA(page):
         page.locator("#dx-input-0").nth(1).click()
         mykad = generate_mykad()
         page.locator("#dx-input-0").nth(1).fill(mykad)
-        print("MyKad ID: ", mykad)
+        print("MyKad ID:", mykad)
 
         # ---- PH NAME ----
         page.locator("#dx-input-1").nth(1).click()
         page.locator("#dx-input-1").nth(1).fill("PERSONAL ACCIDENT")
 
-        # --- Occupation Class ----
-        class_ques = select_popup(
-            "What occupation class do you want to select?",
-            ["Class 1", "Class 2", "Full-Time Student", "Dependent"]
-        )
-        print(f"Occupation Class: {class_ques}")
-
-        if class_ques in ("Full-Time Student"):
+        # ---- BRANCH LOGIC BASED ON OCCUPATION CLASS ----
+        if class_ques == "Full-Time Student":
             # ---- PROPOSER IS NOT THE INSURED ----
             page.get_by_text("Proposer is not the Insured").click()
 
             page.locator("#dx-input-3").nth(1).click()
-            mykad = young_mykad()
-            page.locator("#dx-input-3").nth(1).fill(mykad)
-            print("Child MyKad ID: ", mykad)
+            insured_mykad = young_mykad()
+            page.locator("#dx-input-3").nth(1).fill(insured_mykad)
+            print("Insured MyKad ID:", insured_mykad)
 
             page.locator("#dx-input-4").nth(1).click()
             page.locator("#dx-input-4").nth(1).fill("Insurer")
@@ -56,15 +62,12 @@ def test_PA(page):
             page.get_by_role("option", name=class_ques).click()
 
             # ---- PRODUCT SELECTION ----
-            selected_title = "Personal Accident Safe"    
-            #selected_title = "PA Shield"
             page.locator("[formcontrolname='paProducts']").click()
             page.get_by_role("option", name=selected_title).click()
-            print("Selected Product:", selected_title)
 
             # ---- PLAN TYPE ----
             page.locator(".mat-select-placeholder").click()
-            page.get_by_role("option", name="200,000").click()
+            page.get_by_role("option", name=plan_type).click()
 
         elif class_ques in ("Class 1", "Class 2"):
             # ---- INTERNAL CLASSIFICATION ----
@@ -72,28 +75,25 @@ def test_PA(page):
             page.get_by_role("option", name=class_ques).click()
 
             # ---- PRODUCT SELECTION ----
-            selected_title = "Personal Accident Safe"    
-            #selected_title = "PA Shield"
             page.locator("[formcontrolname='paProducts']").click()
             page.get_by_role("option", name=selected_title).click()
-            print("Selected Product:", selected_title)
 
             # ---- PLAN TYPE ----
             page.locator(".mat-select-placeholder").click()
-            page.get_by_role("option", name="200,000").click()
+            page.get_by_role("option", name=plan_type).click()
 
             # ---- WEEKLY BENEFIT ----
             page.locator("mat-radio-button:has-text('No')").nth(1).click()
-            print("Weekly Benefit not selected")
+            print("Weekly Benefit: No")
 
-        elif class_ques in ("Dependent"):
+        elif class_ques == "Dependent":
             # ---- PROPOSER IS NOT THE INSURED ----
             page.get_by_text("Proposer is not the Insured").click()
 
             page.locator("#dx-input-3").nth(1).click()
-            mykad = child_mykad()
-            page.locator("#dx-input-3").nth(1).fill(mykad)
-            print("Child MyKad ID: ", mykad)
+            insured_mykad = child_mykad()
+            page.locator("#dx-input-3").nth(1).fill(insured_mykad)
+            print("Insured MyKad ID:", insured_mykad)
 
             page.locator("#dx-input-4").nth(1).click()
             page.locator("#dx-input-4").nth(1).fill("Insurer")
@@ -103,21 +103,15 @@ def test_PA(page):
             page.get_by_role("option", name=class_ques).click()
 
             # ---- PRODUCT SELECTION ----
-            selected_title = "Personal Accident Safe"    
-            #selected_title = "PA Shield"
             page.locator("[formcontrolname='paProducts']").click()
             page.get_by_role("option", name=selected_title).click()
-            print("Selected Product:", selected_title)
 
             # ---- PLAN TYPE ----
             page.locator(".mat-select-placeholder").click()
-            page.get_by_role("option", name="200,000").click()
-
-        '''# ---- INCEPTION DATE ----
-        date_field = page.locator("input#inceptionDate")
-        date_field.click()
-        date_field.press("Control+A")
-        date_field.fill("01-06-2026")'''
+            page.get_by_role("option", name=plan_type).click()
+        else:
+            raise ValueError(f"Unknown occupation class '{class_ques}' in PA sheet row 2. "
+                            f"Expected: Class 1, Class 2, Full-Time Student, Dependent")
 
         page.get_by_text("The Proposer/Person to be").click()
 
@@ -127,24 +121,7 @@ def test_PA(page):
 
         # ========== SECOND SCREEN ==========
 
-
-        # ========== SCREEN 2 DEBUG ==========
         page.wait_for_timeout(3000)
-
-        '''print("=== SCREEN 2 DEBUG ===")
-        print("URL:", page.url)
-        print("All buttons:")
-        for btn in page.get_by_role("button").all():
-            print(f"  BUTTON: '{btn.inner_text().strip()}'")
-
-        print("All mat-select (formcontrolname):")
-        for sel in page.locator("mat-select").all():
-            print(f"  MAT-SELECT formcontrolname: '{sel.get_attribute('formcontrolname')}'")
-
-        print("mat-select-placeholder count:", page.locator(".mat-select-placeholder").count())
-        print("Yes visible:", page.get_by_role("button", name="Yes").first.is_visible())
-        print("Add visible:", page.get_by_role("button", name="Add").first.is_visible())
-        print("=== END SCREEN 2 DEBUG ===")'''
 
         # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
         try:
@@ -154,6 +131,9 @@ def test_PA(page):
         except:
             pass
 
+        # ---- Premiums -------
+        sum_insured, gross_premium, sst, stamp_duty, total = pa_prem(page)
+
         # ---- CHECK IF ADDRESS ALREADY EXISTS ----
         add_button = page.locator("button[name='Add'], button:has-text('Add')").first
         try:
@@ -161,9 +141,9 @@ def test_PA(page):
             add_button.click()
             page.wait_for_timeout(1000)
         except:
-            pass  
+            pass
 
-        # ---- STATE ---- (runs for both cases)
+        # ---- STATE ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Johor").click()
         page.wait_for_timeout(2000)
@@ -181,7 +161,7 @@ def test_PA(page):
         # ---- SAVE BUTTON (if address is added) ----
         address_save = page.get_by_role("button", name="Save")
         if address_save.is_visible():
-            address_save.click()            
+            address_save.click()
 
         # ---- CONTACT DETAILS ----
         page.get_by_role("textbox", name="123456789").fill("123456789")
@@ -200,11 +180,11 @@ def test_PA(page):
         quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
         quote_number = quote_text.strip()
         print("Quote Number:", quote_number)
-        
-        # ---- GENERATE & DOWNLOAD QUOTE -----
+
+        # ---- GENERATE & DOWNLOAD QUOTE ----
         page.get_by_role("button", name="Generate Quote").wait_for()
         page.get_by_role("button", name="Generate Quote").click()
-    
+
         page.get_by_role("button", name="Download Quote & PDS Documents").click()
         page.locator("form").get_by_text("Download Quote & PDS Documents").click()
 
@@ -221,7 +201,7 @@ def test_PA(page):
         page.get_by_role("button", name="Issue Policy").click()
         page.get_by_role("button", name="Accept & Proceed").click()
         print("Issue Policy clicked, waiting for processing...")
-        
+
         page.wait_for_timeout(30000)
         page.reload()
 
@@ -230,7 +210,7 @@ def test_PA(page):
         page.get_by_text("Download Policy Schedule").click()
         print("Policy Issued successfully")
 
-        page.wait_for_timeout(10000)
+        page.wait_for_timeout(6000)
 
         with page.expect_download() as download_info:
             page.get_by_role("button", name="Download").click()
@@ -238,7 +218,7 @@ def test_PA(page):
         download.save_as(os.path.join(DOWNLOADS_DIR, "PA_policy.pdf"))
         page.get_by_text("close", exact=True).click()
 
-        # ---- Printing the policy number ----
+        # ---- Policy Number ----
         policy_locator = page.locator("text=Policy #:")
         policy_locator.wait_for()
         policy_text = policy_locator.text_content()
@@ -247,8 +227,9 @@ def test_PA(page):
 
         print("Policy Schedule downloaded successfully")
 
-        # ------- SAVE TO EXCEL -------
-        pa_excel(selected_title, quote_number, policy_number)
+        # ---- SAVE TO EXCEL ----
+        pa_excel(selected_title, quote_number, policy_number, sum_insured,
+                gross_premium, sst, stamp_duty, total)
 
         # ---- SEND EMAIL ----
         try:
@@ -257,7 +238,7 @@ def test_PA(page):
             print("Email failed:", e)
 
     finally:
-        page.wait_for_timeout(15000)
-        page.get_by_text("playwright", exact=True).click()
+        page.get_by_text(username, exact=True).click()
         page.get_by_text("Sign Out", exact=True).click()
-        page.wait_for_timeout(7000)
+        print("Terminated the session")
+        page.wait_for_timeout(15000)

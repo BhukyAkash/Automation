@@ -10,7 +10,7 @@ DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 # ==== Input of Motor Test Data ======
 def get_vehicle_data(vehicle_type):
     wb = load_workbook(EXCEL_PATH)
-    sheet = wb.active
+    sheet = wb["Test Data"]
 
     cell_map = {
         "CV": ("A21", "B21"),

@@ -2,22 +2,26 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from base_login import incep_date, issue_policy, login, navigation, cv_moto
-from excel_utils import get_vehicle_data
+from base_login import incep_date, issue_policy, login, navigation, cv_moto, motor_prem
+from excel_utils import get_vehicle_data, cv_excel
+from extension import cv_extension
+from config import AUTOMATION_FLAGS
 from nstp_flow import nstp_flow
-from excel_file import cv_excel
 from test_mail import send_email
 
 # ---- Path References ----
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..")               # D:\Automation\pages
 DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Automation\pages\NB\downloads
 
+# ---- Load PC flags from config ----
+flags = AUTOMATION_FLAGS["CV"]
+
 def test_cv_motor(page):
 
     try:
         print("====================== Issuance of CV policy ==================")
         page.wait_for_load_state()
-        login(page)
+        username = login(page)
         navigation(page)
         cv_moto(page)
 
@@ -111,6 +115,14 @@ def test_cv_motor(page):
         page.wait_for_timeout(7000)
         ncd_value = page.locator("#currentNCD input.mat-input-element").input_value()
         print("NCD Value:", ncd_value)
+
+        # ==== Multi Contract / Extensions ====
+        print("======== Extension Coverage Selection ========")
+
+        if flags["explore_extensions"]:
+            cv_extension(page, selected_coverage, flags)
+        else:
+            print("No Extensions Selected")
         
         # --- SAVE & NEXT BUTTON ----
         page.get_by_role("button", name="Save & Next").click()
@@ -129,6 +141,9 @@ def test_cv_motor(page):
             print("Yes button clicked")
         except:
             print("Yes button not visible, skipping")
+
+        # ----- Premiums -----
+        motor_prem(page)
 
         # ---- CHECK IF ADDRESS ALREADY EXISTS ----
         try:
@@ -208,6 +223,7 @@ def test_cv_motor(page):
 
 
     finally:
-        page.get_by_text("playwright", exact=True).click()
+        page.get_by_text(username, exact=True).click()
         page.get_by_text("Sign Out", exact=True).click()
+        print("Terminated the session")
         page.wait_for_timeout(15000)

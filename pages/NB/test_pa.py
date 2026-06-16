@@ -12,6 +12,7 @@ from excel_utils import pa_excel, get_pa_data
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..")
 DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 
+# ---- For multiple rows executions ---
 @pytest.mark.parametrize("pa_row", [2])
 
 def test_PA(page, pa_row):

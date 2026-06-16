@@ -2,19 +2,19 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from base_login import incep_date, issue_policy, login, navigation, pc_moto
-from excel_utils import get_vehicle_data
-from datetime import datetime
-from popup_utils import ask_popup
+from base_login import incep_date, issue_policy, login, navigation, pc_moto, motor_prem
+from excel_utils import get_vehicle_data, pc_excel
 from extension import pc_extension
+from config import AUTOMATION_FLAGS
 from nstp_flow import nstp_flow
-from excel_file import pc_excel
 from test_mail import send_email
 
 # ---- Path References ----
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..")               # D:\Automation\pages
 DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Automation\pages\NB\downloads
 
+# ---- Load PC flags from config ----
+flags = AUTOMATION_FLAGS["PC"]
 
 def test_pc_motor(page):
     try:
@@ -115,14 +115,8 @@ def test_pc_motor(page):
         # ==== Multi Contract / Extensions ====
         print("======== Extension Coverage Selection ========")
 
-        answer = ask_popup(
-            question="Do you want to explore Extensions screen?",
-            title="Extension Coverage Selection",
-        )
-
-        if answer == "yes":
-            pc_extension(page, selected_coverage)
-            print("===== Extensions added successfully ======")
+        if flags["explore_extensions"]:
+            pc_extension(page, selected_coverage, flags)
         else:
             print("No Extensions Selected")
 
@@ -141,6 +135,10 @@ def test_pc_motor(page):
         # ---- DRIVER EXPERIENCE ----
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Less than 2 years").click()
+
+        # ----- Premiums -----
+        motor_prem(page)
+        page.pause()
 
         # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
         yes_button = page.get_by_role("button", name="Yes").first
@@ -233,5 +231,5 @@ def test_pc_motor(page):
     finally:
         page.get_by_text(username, exact=True).click()
         page.get_by_text("Sign Out", exact=True).click()
-        print("Logged out from the session")
+        print("Terminated the session")
         page.wait_for_timeout(15000)

@@ -2,22 +2,24 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from excel_utils import get_vehicle_data
-from base_login import incep_date, login, navigation, pc_moto, issue_policy
+from excel_utils import get_vehicle_data, mc_excel
+from base_login import incep_date, login, navigation, pc_moto, issue_policy, motor_prem
 from extension import mc_extension
-from popup_utils import ask_popup
-from excel_file import mc_excel
+from config import AUTOMATION_FLAGS
 from test_mail import send_email
 
 # ---- Path References ----
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..")               # D:\Automation\pages
 DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Automation\pages\NB\downloads
 
+# ---- Load PC flags from config ----
+flags = AUTOMATION_FLAGS["MC"]
+
 def test_mc_motor(page):
 
     try:
         print("====================== Issuance of MC policy ==================")
-        login(page)
+        username = login(page)
         navigation(page)
         pc_moto(page)
 
@@ -131,14 +133,8 @@ def test_mc_motor(page):
         # ==== Multi Contract / Extensions ====
         print("======== Extension Coverage Selection ========")
 
-        answer = ask_popup(
-            question="Do you want to explore Extensions screen?",
-            title="Extension Coverage Selection",
-        )
-
-        if answer == "yes":
-            mc_extension(page, selected_coverage)
-            print("===== Extensions added successfully ======")
+        if flags["explore_extensions"]:
+            mc_extension(page, selected_coverage, flags)
         else:
             print("No Extensions Selected")
 
@@ -156,6 +152,10 @@ def test_mc_motor(page):
 
         page.locator(".mat-select-placeholder").first.click()
         page.get_by_role("option", name="Less than 2 years").click()
+
+        # ----- Premiums -----
+        motor_prem(page)
+        page.pause()
 
         # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
         try:
@@ -241,6 +241,7 @@ def test_mc_motor(page):
 
     finally:
         page.bring_to_front()
-        page.get_by_text("playwright", exact=True).click()
+        page.get_by_text(username, exact=True).click()
         page.get_by_text("Sign Out", exact=True).click()
+        print("Terminated the session")
         page.wait_for_timeout(15000)

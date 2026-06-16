@@ -1,13 +1,10 @@
-from popup_utils import ask_popup
-
 # ------ PC Extensions ------
-def pc_extension(page,coverage_type):
+def pc_extension(page, coverage_type, flags):
 
     page.get_by_role("button", name="Extension Coverage").click()
 
     # --- Package Type Selection ----
-    autobuddy = ask_popup("Do you want to select Autobuddy package?", title="PC Extensions")
-    if autobuddy == "yes":
+    if flags["select_autobuddy"]:
         page.get_by_text("NAPackage Type").click()
         page.wait_for_timeout(1000)
         page.get_by_role("option", name="Autobuddy").click()
@@ -26,9 +23,8 @@ def pc_extension(page,coverage_type):
     else:
         print("No Autobuddy package selected")
 
-    # ---- Comprehensive ----
-    extension_select = ask_popup("Do you want to select extensions?", title="PC Extensions")
-    if extension_select == "yes":
+    # ---- Extensions ----
+    if flags["select_extensions"]:
         if coverage_type == "Comprehensive":
             extensions = [
                 "check All Drivers",
@@ -40,7 +36,6 @@ def pc_extension(page,coverage_type):
                 "Ferry Transit to and / or from Sabah and Labuan"
             ]
 
-        # ---- TPFT ----
         elif coverage_type == "TP, Fire & Theft":
             extensions = [
                 "Legal Liability to Passenger (LLP)",
@@ -54,7 +49,7 @@ def pc_extension(page,coverage_type):
                 page.locator("mat-form-field").filter(has_text="Sum Insured *MYR").locator("#sumInsured").fill("800")
 
             elif extension_name == "Inclusion of Special Perils":
-                page.get_by_label("Extension Coverage").get_by_text("Vehicle Sum Insured",exact=True).click()
+                page.get_by_label("Extension Coverage").get_by_text("Vehicle Sum Insured", exact=True).click()
 
             print(f"{extension_name} selected successfully")
 
@@ -62,17 +57,16 @@ def pc_extension(page,coverage_type):
         print("No extensions selected")
 
 # ------ MC Extensions ------
-def mc_extension(page, coverage_type):
+def mc_extension(page, coverage_type, flags):
+
     page.get_by_role("button", name="Extension Coverage").click()
 
     # --- Package Type Selection ----
-    autobuddy = ask_popup("Do you want to select Motorcyclist PA Contract?", title="MC Multi Contract")
-    if autobuddy == "yes":
+    if flags["select_autobuddy"]:
         page.get_by_text("NAPackage Type").click()
         page.wait_for_timeout(1000)
         page.get_by_role("option", name="Motorcyclist PA").click()
         page.wait_for_timeout(1000)
-        # --- Selected Package type ----
         selected_package = page.locator("#mat-select-value-11 span.mat-select-min-line").inner_text()
         print("Selected Package:", selected_package)
 
@@ -86,9 +80,8 @@ def mc_extension(page, coverage_type):
     else:
         print("MPA Contract not selected")
 
-    # ---- Comprehensive ----
-    extension_select = ask_popup("Do you want to select extensions?", title="MC Extensions")
-    if extension_select == "yes":
+    # ---- Extensions ----
+    if flags["select_extensions"]:
         if coverage_type == "Comprehensive":
             extensions = [
                 "All Riders",
@@ -96,13 +89,11 @@ def mc_extension(page, coverage_type):
                 "Legal Liability to Pillion",
                 "Accessories fixed to motorcycle",
                 "Ferry Transit to and / or from Sabah and Labuan",
-                "Strike Riot and Civil Commotion",                
+                "Strike Riot and Civil Commotion",
             ]
-
-        # ---- TPL ----
         elif coverage_type == "Third Party":
             extensions = [
-                "All Riders",               
+                "All Riders",
             ]
 
         for extension_name in extensions:
@@ -113,22 +104,20 @@ def mc_extension(page, coverage_type):
                 container.locator("input#sumInsured").fill("800")
 
             print(f"{extension_name} selected successfully")
-
     else:
         print("No extensions selected")
 
-# ------ CV Extensions ----
-def cv_extension(page, coverage_type):
+# ------ CV Extensions ------
+def cv_extension(page, coverage_type, flags):
+
     page.get_by_role("button", name="Extension Coverage").click()
 
     # --- Package Type Selection ----
-    autobuddy = ask_popup("Do you want to select Motorist PA package?", title="PC Extensions")
-    if autobuddy == "yes":
+    if flags["select_autobuddy"]:
         page.get_by_text("NAPackage Type").click()
         page.wait_for_timeout(1000)
         page.get_by_role("option", name="Motorist PA").click()
         page.wait_for_timeout(1000)
-        # --- Selected Package type ----
         selected_package = page.locator("#mat-select-value-11 span.mat-select-min-line").inner_text()
         print("Selected Package:", selected_package)
 
@@ -142,28 +131,23 @@ def cv_extension(page, coverage_type):
     else:
         print("Motorist PA package is not selected")
 
-    # ---- Comprehensive ----
-    extension_select = ask_popup("Do you want to select extensions?", title="PC Extensions")
-    if extension_select == "yes":
+    # ---- Extensions ----
+    if flags["select_extensions"]:
         if coverage_type == "Comprehensive":
-            extensions = [                
+            extensions = [
                 "Windscreen Damage",
                 "Strike riot and civil commotion",
-                "Ferry Transit to and / or from Sabah and Labuan"
+                "Ferry Transit to and / or from Sabah and Labuan",
                 "Inclusion of Special Perils",
                 "Passenger Risk",
                 "Passenger Risk-Employees of the Insured-good carrying vehicle only",
             ]
-
-        # ---- TPFT ----
         elif coverage_type == "TP, Fire & Theft":
             extensions = [
                 "Passenger Risk",
                 "Passenger Risk-Employees of the Insured-good carrying vehicle only",
             ]
-
-        # --- TPL ----
-        elif coverage_type == "TP, Fire & Theft":
+        elif coverage_type == "Third Party":
             extensions = [
                 "Passenger Risk",
                 "Passenger Risk-Employees of the Insured-good carrying vehicle only",
@@ -176,6 +160,5 @@ def cv_extension(page, coverage_type):
                 page.locator("mat-form-field").filter(has_text="Sum Insured").locator("#sumInsured").fill("800")
 
             print(f"{extension_name} selected successfully")
-
     else:
         print("No extensions selected")

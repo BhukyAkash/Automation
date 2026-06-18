@@ -28,12 +28,16 @@ def get_vehicle_data(vehicle_type):
         if used_str in ("Y", "RUNNING"):
             continue
 
-        # Found an available row — claim it immediately
+        # Check data exists before claiming
+        reg   = sheet.cell(row=row_idx, column=cfg["reg_col"]).value
+        mykad = sheet.cell(row=row_idx, column=cfg["ic_col"]).value
+
+        if not reg or not mykad:
+            break  # Empty row — no more test data
+
+        # Data is valid — claim it
         sheet.cell(row=row_idx, column=cfg["used_col"]).value = "RUNNING"
         wb.save(EXCEL_PATH)
-
-        reg    = sheet.cell(row=row_idx, column=cfg["reg_col"]).value
-        mykad  = sheet.cell(row=row_idx, column=cfg["ic_col"]).value
         claimed_row = row_idx
         break
 
@@ -44,7 +48,7 @@ def get_vehicle_data(vehicle_type):
     return {
         "vehicle_reg_no": reg,
         "mykad": mykad,
-        "claimed_row": claimed_row,   # needed by mark_policy_issued() and reset_on_error()
+        "claimed_row": claimed_row,
         "vehicle_type": vehicle_type,
     }
 

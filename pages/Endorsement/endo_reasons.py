@@ -78,7 +78,7 @@ def extend_poi(page):
 # --- Amend Coverage / Extensions ---
 def amend_coverage(page):
     # ---- Endorsement Reason ----
-    reason = "Amend Coverage / Extensions"
+    reason = "Amend Coverage/Extensions"
     page.get_by_text(reason).click()
     print(f"Endorsement Reason: {reason}")
 
@@ -132,10 +132,10 @@ def save_excel(policy_number, endo_quote):
 
         if matched_row:
 
-            ws.cell(row=matched_row, column=11).value = endo_quote
+            ws.cell(row=matched_row, column=20).value = endo_quote
 
             wb.save(file_path)
 
-            print(f"Endo Quote Reference '{endo_quote}' written into Excel, Row {matched_row} (Policy: {policy_number})")
+            print(f"Endo Quote Reference '{endo_quote}' written into Excel, Row {matched_row}(Policy: {policy_number})")
         else:
             print(f"Policy Number '{policy_number}' not found in Excel")

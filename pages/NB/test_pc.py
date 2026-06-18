@@ -3,7 +3,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from base_login import incep_date, issue_policy, login, navigation, pc_moto, motor_prem
-from excel_utils import get_vehicle_data, pc_excel
+from excel_utils import get_vehicle_data, pc_excel, mark_policy_issued, reset_on_error
 from extension import pc_extension
 from config import AUTOMATION_FLAGS
 from nstp_flow import nstp_flow
@@ -17,6 +17,7 @@ DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Autom
 flags = AUTOMATION_FLAGS["PC"]
 
 def test_pc_motor(page):
+    vehicle_data = None
     try:
         print("====================== Issuance of PC policy ==================")
         username = login(page)
@@ -27,6 +28,8 @@ def test_pc_motor(page):
         
         # ---- VEHICLE REG ----
         vehicle_data = get_vehicle_data("PC")
+        if vehicle_data is None:
+            return
         page.get_by_role("textbox").first.fill(vehicle_data["vehicle_reg_no"])
 
         # ---- Place of Use ----
@@ -126,7 +129,14 @@ def test_pc_motor(page):
         print("NCD Value:", ncd_value)
 
         #---- SAVE & NEXT BUTTON -----
-        page.get_by_role("button", name="Save & Next").click()
+        try:
+            page.get_by_role("button", name="Save & Next").click()
+        except Exception as e:
+            if "TimeoutError" in type(e).__name__ or "Timeout" in str(e):
+                print("Vehicle data already used in system, stopping the execution.")
+                mark_policy_issued(vehicle_data["vehicle_type"], vehicle_data["claimed_row"])
+                return
+            raise
         print("Registration Number is Triggered to ISM")
 
 
@@ -137,8 +147,7 @@ def test_pc_motor(page):
         page.get_by_role("option", name="Less than 2 years").click()
 
         # ----- Premiums -----
-        motor_prem(page)
-        page.pause()
+        sum_insured, act_prem, basic_prem, ncd, after_ncd, gross_premium, sst, stamp_duty, total = motor_prem(page)
 
         # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
         yes_button = page.get_by_role("button", name="Yes").first
@@ -207,6 +216,7 @@ def test_pc_motor(page):
 
         # ==== Issue Policy function ====
         policy_number = issue_policy(page)
+        mark_policy_issued(vehicle_data["vehicle_type"], vehicle_data["claimed_row"])
 
         # ---- Download the policy schedule ----
         page.get_by_role("button", name="Download & e-mail Policy").click()
@@ -220,13 +230,21 @@ def test_pc_motor(page):
         print("Policy is Issued and Schedule letter downloaded successfully.")
 
         # --------- SAVE TO EXCEL ---------
-        pc_excel(selected_coverage, quote_number, policy_number)
+        pc_excel(selected_coverage, quote_number, policy_number,
+        sum_insured, act_prem, basic_prem, ncd,
+        after_ncd, gross_premium, sst, stamp_duty, total)
 
         # -------- SEND EMAIL ---------
         try:
             send_email()
         except Exception as e:
             print("Email failed:", e)
+
+    except Exception as e:
+        print(f"Test failed: {e}")
+        if vehicle_data:
+            reset_on_error(vehicle_data["vehicle_type"], vehicle_data["claimed_row"])
+        raise
 
     finally:
         page.get_by_text(username, exact=True).click()

@@ -31,7 +31,7 @@ def nstp_flow(page, quote_number, vehicle_type="cv"):
         page.wait_for_timeout(17000)
 
         browser = page.context.browser
-        manager_context = browser.new_context()
+        manager_context = browser.new_context(no_viewport = True)
         manager_page = manager_context.new_page()
 
         url_segment = "reg" if vehicle_type == "pc" else "rcv"

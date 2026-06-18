@@ -8,22 +8,64 @@ BASE_DIR = os.path.join(os.path.dirname(__file__), "..")
 DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 
 # ==== Input of Motor Test Data ======
+VEHICLE_CONFIG = {
+    "CV": {"reg_col": 1,  "ic_col": 2,  "used_col": 3},   # A, B, C
+    "PC": {"reg_col": 5,  "ic_col": 6,  "used_col": 8},   # E, F, H
+    "MC": {"reg_col": 10, "ic_col": 11, "used_col": 13},  # J, K, M
+}
+
 def get_vehicle_data(vehicle_type):
+    cfg = VEHICLE_CONFIG[vehicle_type]
     wb = load_workbook(EXCEL_PATH)
     sheet = wb["Test Data"]
 
-    cell_map = {
-        "CV": ("A21", "B21"),
-        "MC": ("J38", "K38"),
-        "PC": ("E26", "F26"),
-    }
+    claimed_row = None
 
-    reg_cell, mykad_cell = cell_map[vehicle_type]
+    for row_idx, row in enumerate(sheet.iter_rows(min_row=2), start=2):
+        used_val = sheet.cell(row=row_idx, column=cfg["used_col"]).value
+        used_str = str(used_val).strip().upper() if used_val else ""
+
+        if used_str in ("Y", "RUNNING"):
+            continue
+
+        # Found an available row — claim it immediately
+        sheet.cell(row=row_idx, column=cfg["used_col"]).value = "RUNNING"
+        wb.save(EXCEL_PATH)
+
+        reg    = sheet.cell(row=row_idx, column=cfg["reg_col"]).value
+        mykad  = sheet.cell(row=row_idx, column=cfg["ic_col"]).value
+        claimed_row = row_idx
+        break
+
+    if claimed_row is None:
+        print(f"No test data found for {vehicle_type}")
+        return None
 
     return {
-        "vehicle_reg_no": sheet[reg_cell].value,
-        "mykad": sheet[mykad_cell].value
+        "vehicle_reg_no": reg,
+        "mykad": mykad,
+        "claimed_row": claimed_row,   # needed by mark_policy_issued() and reset_on_error()
+        "vehicle_type": vehicle_type,
     }
+
+
+def mark_policy_issued(vehicle_type, claimed_row):
+    """Call this after policy is successfully issued."""
+    cfg = VEHICLE_CONFIG[vehicle_type]
+    wb = load_workbook(EXCEL_PATH)
+    sheet = wb["Test Data"]
+    sheet.cell(row=claimed_row, column=cfg["used_col"]).value = "Y"
+    wb.save(EXCEL_PATH)
+
+
+def reset_on_error(vehicle_type, claimed_row):
+    """Call this in except block if policy was NOT issued — returns row to pool."""
+    cfg = VEHICLE_CONFIG[vehicle_type]
+    wb = load_workbook(EXCEL_PATH)
+    sheet = wb["Test Data"]
+    sheet.cell(row=claimed_row, column=cfg["used_col"]).value = "N"
+    wb.save(EXCEL_PATH)
+
 
 # ==== Input: PA Test Data (Sheet 2 - "PA") ======
 def get_pa_data(row=2):

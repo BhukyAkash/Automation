@@ -2,10 +2,10 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from excel_utils import get_vehicle_data, mc_excel
+from excel_utils import get_vehicle_data, mc_excel, mark_policy_issued, reset_on_error
 from base_login import incep_date, login, navigation, pc_moto, issue_policy, motor_prem
+from vehicle_info import get_vehicle_info, AUTOMATION_FLAGS
 from extension import mc_extension
-from config import AUTOMATION_FLAGS
 from test_mail import send_email
 
 # ---- Path References ----
@@ -16,26 +16,75 @@ DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Autom
 flags = AUTOMATION_FLAGS["MC"]
 
 def test_mc_motor(page):
-
+    vehicle_data = None
     try:
-        print("====================== Issuance of MC policy ==================")
+        print("\n====================== Issuance of MC policy ==================")
         username = login(page)
         navigation(page)
         pc_moto(page)
 
+        # ---- Load MC vehicle info ----
+        vehicle_info = get_vehicle_info("MC")
+
         # ========= FIRST SCREEN ===========
-        
+
         # ---- VEHICLE REG ----
         vehicle_data = get_vehicle_data("MC")
+        if vehicle_data is None:
+            return
+
+        print(f"Vehicle Regio: {vehicle_data["vehicle_reg_no"]}")
+        print(f"MY KadID: {vehicle_data["mykad"]}")
+
         page.get_by_role("textbox").first.fill(vehicle_data["vehicle_reg_no"])
 
         #---- Place of Use ----
         page.locator(".mat-select-placeholder").click()
-        page.get_by_role("option", name="Johor").click()
+        page.get_by_role("option", name=vehicle_info["place_of_use"]).click()
 
         # ---- Vehicle Search ----
         page.get_by_role("button", name="search Vehicle Search").click()
         page.wait_for_timeout(2000)
+
+        page.get_by_role("menuitem", name="edit").click()
+        page.get_by_role("button", name="Proceed").click()
+        page.wait_for_timeout(2000)
+
+        # ---- MAKE / MODEL / YEAR ----
+        if vehicle_info["change_vehicle"]:
+            make_dropdown = page.locator("mat-select#make")
+            if make_dropdown.is_visible():
+                make_dropdown.click()
+                page.get_by_role("option", name=vehicle_info["make"]).click()
+                page.wait_for_timeout(1000)
+            else:
+                print("Make dropdown not visible, skipping")
+
+            model_dropdown = page.locator("mat-select#model")
+            if model_dropdown.is_visible():
+                model_dropdown.click()
+                page.get_by_role("option", name=vehicle_info["model"]).click()
+                page.wait_for_timeout(1000)
+            else:
+                print("Model dropdown not visible, skipping")
+
+            year_dropdown = page.locator("mat-select#year")
+            if year_dropdown.is_visible():
+                year_dropdown.click()
+                page.get_by_role("option", name=vehicle_info["year"]).click()
+            else:
+                print("Year dropdown not visible, skipping")
+        else:
+            pass
+
+        # ---- READ BACK FOR LOGGING ----
+        try:
+            make = page.locator("#make .mat-select-min-line").inner_text()
+            model = page.locator("#model .mat-select-min-line").inner_text()
+            year = page.locator("#year .mat-select-min-line").inner_text()
+            print(f"Make: {make} | Model: {model} | Year: {year}")
+        except:
+            print("Make/Model/Year not available to read back")
 
         # --- Engine Capacity field ----
         cc_input = page.locator('input#cc')
@@ -43,18 +92,19 @@ def test_mc_motor(page):
             current_value = cc_input.input_value().strip()
             if current_value == "" or current_value == "0":
                 cc_input.dblclick()
-                cc_input.fill("1200")
+                cc_input.fill(vehicle_info["engine_capacity"])
+                print(f"Engine Capacity filled: {vehicle_info['engine_capacity']}")
             else:
                 print(f"Engine Capacity: {current_value}")
 
         # --- Seating Capacity field ----
         seat_input = page.locator('input#seatCapacity')
-
         if seat_input.is_visible():
             current_value = seat_input.input_value().strip()
             if current_value == "" or current_value == "0":
                 seat_input.dblclick()
-                seat_input.fill("2")
+                seat_input.fill(vehicle_info["seating_capacity"])
+                print(f"Seating Capacity filled: {vehicle_info['seating_capacity']}")
             else:
                 print(f"Seating Capacity: {current_value}")
 
@@ -87,7 +137,7 @@ def test_mc_motor(page):
         vehicle_age = int(vehicle_age_text) if vehicle_age_text else 0
         print(f"Vehicle Age: {vehicle_age} years")
 
-        
+
         # ========== SECOND SCREEN ==========
 
         # ---- COVERAGE TYPE (read default) ----
@@ -95,12 +145,12 @@ def test_mc_motor(page):
         print("Default Coverage type: ", selected_coverage)
 
         # ---- COVERAGE TYPE (change only if default is not Third Party) ----
-        if selected_coverage != "Third Party":
+        if vehicle_info["change_coverage"] and selected_coverage != "Third Party":
             page.locator("#mat-select-value-9").click()
-            if vehicle_age >= 15:
-                page.get_by_role("option", name="Third Party").click()
-            else:
-                page.get_by_role("option", name="Comprehensive").click()
+            page.get_by_role("option", name=vehicle_info["coverage_type"]).click()
+            print(f"Coverage type changed to: {vehicle_info['coverage_type']}")
+        else:
+            print("Keeping default coverage type")
 
         selected_coverage = page.locator("#mat-select-value-9 span.mat-select-min-line").inner_text().strip()
         print("Selected Coverage type: ", selected_coverage)
@@ -154,7 +204,7 @@ def test_mc_motor(page):
         page.get_by_role("option", name="Less than 2 years").click()
 
         # ----- Premiums -----
-        motor_prem(page)
+        sum_insured, act_prem, basic_prem, ncd, after_ncd, gross_premium, sst, stamp_duty, total = motor_prem(page)
         page.pause()
 
         # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
@@ -218,6 +268,7 @@ def test_mc_motor(page):
 
         # ==== Issue Policy function ====
         policy_number = issue_policy(page)
+        mark_policy_issued(vehicle_data["vehicle_type"], vehicle_data["claimed_row"])
         
         # ---- Download the policy schedule ----
         page.get_by_role("button", name="Download & e-mail Policy").click()
@@ -231,7 +282,9 @@ def test_mc_motor(page):
         print("Policy is Issued and Schedule letter downloaded successfully.")
 
         # --------- SAVE TO EXCEL ---------
-        mc_excel(selected_coverage, quote_number, policy_number)
+        mc_excel(selected_coverage, quote_number, policy_number,
+        sum_insured, act_prem, basic_prem, ncd,
+        after_ncd, gross_premium, sst, stamp_duty, total)
 
         # -------- SEND EMAIL ---------
         try:
@@ -239,9 +292,15 @@ def test_mc_motor(page):
         except Exception as e:
             print("Email failed:", e)
 
+    except Exception as e:
+        print(f"Test failed: {e}")
+        if vehicle_data:
+            reset_on_error(vehicle_data["vehicle_type"], vehicle_data["claimed_row"])
+        raise
+
     finally:
         page.bring_to_front()
         page.get_by_text(username, exact=True).click()
         page.get_by_text("Sign Out", exact=True).click()
         print("Terminated the session")
-        page.wait_for_timeout(15000)
+        page.wait_for_timeout(7000)

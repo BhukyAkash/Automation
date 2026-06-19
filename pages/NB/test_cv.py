@@ -3,9 +3,9 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from base_login import incep_date, issue_policy, login, navigation, cv_moto, motor_prem
-from excel_utils import get_vehicle_data, cv_excel
+from excel_utils import get_vehicle_data, cv_excel, mark_policy_issued, reset_on_error
+from vehicle_info import get_vehicle_info, AUTOMATION_FLAGS
 from extension import cv_extension
-from config import AUTOMATION_FLAGS
 from nstp_flow import nstp_flow
 from test_mail import send_email
 
@@ -17,68 +17,89 @@ DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")  # D:\Autom
 flags = AUTOMATION_FLAGS["CV"]
 
 def test_cv_motor(page):
-
+    vehicle_data = None
     try:
-        print("====================== Issuance of CV policy ==================")
+        print("\n====================== Issuance of CV policy ==================")
         page.wait_for_load_state()
         username = login(page)
         navigation(page)
         cv_moto(page)
 
+        # ---- Load vehicle info ----
+        vehicle_info = get_vehicle_info("CV")
+
         # ========= FIRST SCREEN ===========
 
+        # ---- VEHICLE REG ----
         vehicle_data = get_vehicle_data("CV")
-        page.get_by_role("textbox").first.fill(vehicle_data["vehicle_reg_no"])
-        print("Registration Number:", vehicle_data["vehicle_reg_no"])
+        if vehicle_data is None:
+            return
 
+        print(f"Vehicle Regio: {vehicle_data["vehicle_reg_no"]}")
+        print(f"MY KadID: {vehicle_data["mykad"]}")
+
+        page.get_by_role("textbox").first.fill(vehicle_data["vehicle_reg_no"])
+
+        # ---- Place of Use ---
         page.locator(".mat-select-placeholder").click()
-        page.get_by_role("option", name="Johor").click()
+        page.get_by_role("option", name=vehicle_info["place_of_use"]).click()
 
         page.get_by_role("button", name="search Vehicle Search").click()
+        page.wait_for_timeout(3000)
 
-        page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="Commercial Vehicle").click()
+        # ---- Vehicle Class ----
+        page.locator("mat-select#vehClass").click()
+        page.get_by_role("option", name=vehicle_info["vehicle_class"]).click()
 
-        # ---- VEHICLE USE ----
-        page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="C permit").click()
+        # ---- Vehicle Use ----
+        page.locator("mat-select#vehUse").click()
+        page.get_by_role("option", name=vehicle_info["vehicle_use"]).click()
 
-        page.locator("mat-form-field").filter(has_text="Engine # *").locator("#engineNo").fill("63547")
-        page.locator("mat-form-field").filter(has_text="Chassis # *").locator("#chassisNo").fill("34576657")
+        # --- Engine & Chasis No. ----
+        page.locator("mat-form-field").filter(has_text="Engine # *").locator("#engineNo").fill(vehicle_info["engine_no"])
+        page.locator("mat-form-field").filter(has_text="Chassis # *").locator("#chassisNo").fill(vehicle_info["chassis_no"])
+
+        # ---- Engine Capacity ---
+        page.locator('input#cc').fill(vehicle_info["engine_capacity"])
 
         # ---- MAKE & MODEL ----
-        page.locator("mat-form-field", has_text="Make").click()
-        page.get_by_role("option", name="VOLVO").click()
+        page.locator("mat-select#make").click()
+        page.get_by_role("option", name=vehicle_info["make"]).click()
 
-        page.locator("mat-form-field", has_text="Model").click()
-        page.get_by_role("option", name="F16").click()
+        page.locator("mat-select#model").click()
+        page.get_by_role("option", name=vehicle_info["model"]).click()
 
         # ---- Year of Manufacture ----
-        page.locator("mat-form-field", has_text="Year of Manufacture").click()
-        page.get_by_role("option", name="2015").click()
+        page.locator("mat-select#year").click()
+        page.get_by_role("option", name=vehicle_info["year"]).click()
         page.wait_for_timeout(2000)
 
-        # ---- Vehicle Age (to determine coverage type) ---- 
-        vehicle_age_locator = page.locator("mat-form-field").filter(has_text="Vehicle Age").locator("#vehicleAge")
-        vehicle_age_text = vehicle_age_locator.input_value().strip()
+        # ---- READ BACK FOR LOGGING ----
+        make = page.locator("#make .mat-select-min-line").inner_text()
+        model = page.locator("#model .mat-select-min-line").inner_text()
+        year = page.locator("#year .mat-select-min-line").inner_text()
+        print(f"Make: {make} | Model: {model} | Year: {year}")
 
+        # ---- Vehicle Age (to determine coverage type) ----
+        vehicle_age_text = page.locator("input#vehicleAge").input_value().strip()
         vehicle_age = int(vehicle_age_text)
         print(f"Vehicle Age: {vehicle_age} years")
 
         # ---- VARIANT ----
-        page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-76").click()
-        page.get_by_role("option", name="NA").click()
+        page.locator("mat-select#variant").click()
+        page.get_by_role("option", name=vehicle_info["variant"]).click()
 
         # ---- Seating Capacity ----
-        page.locator("mat-form-field").filter(has_text="Seating Capacity *").locator("#seatCapacity").fill("5")
+        page.locator("input#seatCapacity").fill(vehicle_info["seating_capacity"])
         # ---- Carrying Capacity ----
-        page.locator("mat-form-field").filter(has_text="Carrying Capacity *").locator("#carryingCapacity").fill("20")
+        page.locator("input#carryingCapacity").fill(vehicle_info["carrying_capacity"])
 
-        page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-84").click()
-        page.get_by_role("option", name="kg").click()
+        page.locator("mat-select#loadCarrying").click()
+        page.get_by_role("option", name=vehicle_info["carrying_capacity_unit"]).click()
 
-        page.locator(".mat-select-placeholder.mat-select-min-line.ng-tns-c176-86").click()
-        page.get_by_role("option", name="Beverages Bottles").click()
+        # ---- Carriage Goods ----
+        page.locator("mat-select#carriageGoods").click()
+        page.get_by_role("option", name=vehicle_info["carriage_goods"]).click()
 
         # ---- Save Vehicle Info Button ----
         page.get_by_role("button", name="Save Vehicle Info").click()
@@ -87,11 +108,14 @@ def test_cv_motor(page):
         # ========== SECOND SCREEN ==========
 
         # ---- Coverage Type ----
-        page.locator("#mat-select-value-31").click()
-        if vehicle_age >= 20:
-            page.get_by_role("option", name="TP, Fire & Theft").click()
+        page.locator("mat-select#coverageType").click()
+        if vehicle_info["change_coverage"]:
+            page.get_by_role("option", name=vehicle_info["coverage_type"]).click()
         else:
-            page.get_by_role("option", name="Comprehensive").click()
+            if vehicle_age >= 20:
+                page.get_by_role("option", name="TP, Fire & Theft").click()
+            else:
+                page.get_by_role("option", name="Comprehensive").click()
 
         selected_coverage = page.locator("#mat-select-value-31").inner_text().strip()
         print("Selected Coverage type: ", selected_coverage)
@@ -101,11 +125,11 @@ def test_cv_motor(page):
 
         # ----- SUM INSURED ----
         page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").click()
-        page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").fill("20000")
+        page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").fill(vehicle_info["sum_insured"])
+        page.pause()
 
         # ---- BUSINESS REGISTRATION NUMBER ----
         page.locator("mat-form-field").filter(has_text="Business Registration # *").locator("#id").fill(vehicle_data["mykad"])
-        print("MyKad Number:", vehicle_data["mykad"])
 
         # ---- NAME AS PER ID / LEGAL NAME ----
         page.locator("dx-input").filter(has_text="* Name as per ID / Legal Name").locator("#legalName").fill("CV C Permit")
@@ -124,10 +148,16 @@ def test_cv_motor(page):
         else:
             print("No Extensions Selected")
         
-        # --- SAVE & NEXT BUTTON ----
-        page.get_by_role("button", name="Save & Next").click()
+        #---- SAVE & NEXT BUTTON -----
+        try:
+            page.get_by_role("button", name="Save & Next").click()
+        except Exception as e:
+            if "TimeoutError" in type(e).__name__ or "Timeout" in str(e):
+                print("Vehicle data already used in system, stopping the execution.")
+                mark_policy_issued(vehicle_data["vehicle_type"], vehicle_data["claimed_row"])
+                return
+            raise
         print("Registration Number is Triggered to ISM")
-
         page.wait_for_timeout(5000)
         
         # ========== THIRD SCREEN ==== PH Details ======
@@ -135,7 +165,7 @@ def test_cv_motor(page):
         # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
         try:
             yes_button = page.get_by_role("button", name="Yes").first
-            yes_button.wait_for(state="visible", timeout=5000)
+            yes_button.wait_for(state="visible", timeout=12000)
             yes_button.click()
             page.wait_for_timeout(1000)
             print("Yes button clicked")
@@ -143,7 +173,7 @@ def test_cv_motor(page):
             print("Yes button not visible, skipping")
 
         # ----- Premiums -----
-        motor_prem(page)
+        sum_insured, act_prem, basic_prem, ncd, after_ncd, gross_premium, sst, stamp_duty, total = motor_prem(page)
 
         # ---- CHECK IF ADDRESS ALREADY EXISTS ----
         try:
@@ -198,6 +228,7 @@ def test_cv_motor(page):
 
         # ==== Issue Policy function ====
         policy_number = issue_policy(page)
+        mark_policy_issued(vehicle_data["vehicle_type"], vehicle_data["claimed_row"])
         
         # ---- Download the policy schedule ----
         page.get_by_role("button", name="Download & e-mail Policy").click()
@@ -212,8 +243,10 @@ def test_cv_motor(page):
 
         
         # --------- SAVE TO EXCEL ---------
-        cv_excel(selected_coverage, quote_number, policy_number)
-        
+        cv_excel(selected_coverage, quote_number, policy_number,
+        sum_insured, act_prem, basic_prem, ncd,
+        after_ncd, gross_premium, sst, stamp_duty, total)
+
 
         # -------- SEND EMAIL ---------
         try:
@@ -222,8 +255,14 @@ def test_cv_motor(page):
             print("Email failed:", e)
 
 
+    except Exception as e:
+        print(f"Test failed: {e}")
+        if vehicle_data:
+            reset_on_error(vehicle_data["vehicle_type"], vehicle_data["claimed_row"])
+        raise
+
     finally:
         page.get_by_text(username, exact=True).click()
         page.get_by_text("Sign Out", exact=True).click()
         print("Terminated the session")
-        page.wait_for_timeout(15000)
+        page.wait_for_timeout(7000)

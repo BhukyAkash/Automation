@@ -1,12 +1,15 @@
+import re
 from datetime import datetime
 
 def login(page):
     page.goto("https://ath-uat.tuneinsurance.com/realms/tune/protocol/openid-connect/auth?response_type=code&client_id=1003&state=VEJYMU9YQ3pVaGZGemotRTNLMGN4OHhFaXc3ZmQ1cldaRXRFMG4wbDJBT0Rr&redirect_uri=https%3A%2F%2Fagent-uat.tuneinsurance.com%2F%23%2Fhome&scope=openid%20profile&code_challenge=TSCey8KaEFyGzZ5lgGfWXplgcJ1ivvARav8R4bnYPfM&code_challenge_method=S256&nonce=VEJYMU9YQ3pVaGZGemotRTNLMGN4OHhFaXc3ZmQ1cldaRXRFMG4wbDJBT0Rr")
-    username = "vijaykumar.likki@serole.com"        # "playwright.test@serole.com"
+    username = "playwright.test@serole.com" #"vijaykumar.likki@serole.com"        # 
     page.get_by_role("textbox", name="Username or email").fill(username)
     page.get_by_role("textbox", name="Password").fill("Serole@321")
     page.get_by_role("button", name="Login").click()
+    print("Logged into: ", username)
     return username
+
 def navigation(page):
     page.get_by_text("request_quote QMS Quotation").click()
     page.get_by_role("button", name="New Quote").click()
@@ -121,3 +124,74 @@ def issue_policy(page):
             print("Policy not issued after 2 minutes, something went wrong")
 
         return policy_number
+
+# ---- Premiums -----
+def extract_myr(text: str) -> float:
+    is_negative = "-" in text
+    match = re.search(r"[\d,]+\.?\d*", text)
+    value = float(match.group().replace(",", "")) if match else 0.0
+    return -value if is_negative else value
+
+def motor_prem(page):
+
+    # ---- Premiums ----
+    sum_insured1 = page.locator("li").filter(has_text="Vehicle Sum Insured").locator(".summary-result-value").inner_text().strip()
+    sum_insured = extract_myr(sum_insured1)
+    print("\nSum Insured:", sum_insured)
+
+    ap = page.locator("li").filter(has_text="Act Premium").locator(".summary-result-value").inner_text().strip()
+    act_prem = extract_myr(ap)
+    print("Act Premium:", act_prem)
+
+    bp = page.locator("li").filter(has_text="Basic Premium").locator(".summary-result-value").inner_text().strip()
+    basic_prem = extract_myr(bp)
+    print("Basic Premium:", basic_prem)
+
+    ncd_value = page.locator("(//li[contains(.,'NCD')]//span[contains(@class,'summary-result-value')])[1]").inner_text().strip()
+    ncd = extract_myr(ncd_value)
+    print("NCD Premium:", ncd)
+
+    ncd_after = page.locator("li").filter(has_text="Premium after NCD").locator(".summary-result-value").inner_text().strip()
+    after_ncd = extract_myr(ncd_after)
+    print("Premium after NCD:", after_ncd)
+
+    gp = page.locator("li").filter(has_text="Gross Premium").locator(".summary-result-value").inner_text().strip()
+    gross_premium = extract_myr(gp)
+    print("Gross Premium:", gross_premium)
+
+    tax = page.locator("li").filter(has_text="SST").locator(".summary-result-value").inner_text().strip()
+    sst = extract_myr(tax)
+    print("SST:", sst)
+
+    sd = page.locator("li").filter(has_text="Stamp Duty").locator(".summary-result-value").inner_text().strip()
+    stamp_duty = extract_myr(sd)
+    print("Stamp Duty:", stamp_duty)
+
+    total_payable = page.locator("div").filter(has_text="Total Payable Premium").locator(".final-amount").inner_text().strip()
+    total = extract_myr(total_payable)
+    print("Total Premium:", total)
+
+    return sum_insured, act_prem, basic_prem, ncd, after_ncd, gross_premium, sst, stamp_duty, total
+
+def pa_prem(page):
+    value = page.locator("li").filter(has_text="Sum Insured").locator(".summary-result-value").inner_text().strip()
+    sum_insured = extract_myr(value)
+    print("\nSum Insured:", sum_insured)
+
+    gp = page.locator("li").filter(has_text="Gross Premium").locator(".summary-result-value").inner_text().strip()
+    gross_premium = extract_myr(gp)
+    print("Gross Premium:", gross_premium)
+
+    tax = page.locator("li").filter(has_text="SST").locator(".summary-result-value").inner_text().strip()
+    sst = extract_myr(tax)
+    print("SST:", sst)
+
+    sd = page.locator("li").filter(has_text="Stamp Duty").locator(".summary-result-value").inner_text().strip()
+    stamp_duty = extract_myr(sd)
+    print("Stamp Duty:", stamp_duty)
+
+    total_payable = page.locator("div").filter(has_text="Total Payable Premium").locator(".final-amount").inner_text().strip()
+    total = extract_myr(total_payable)
+    print("Total Premium:", total)
+
+    return sum_insured, gross_premium, sst, stamp_duty, total

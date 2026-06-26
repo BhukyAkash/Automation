@@ -126,7 +126,6 @@ def test_cv_motor(page):
         # ----- SUM INSURED ----
         page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").click()
         page.get_by_role("region", name="Coverage").locator("input[type=\"text\"]").fill(vehicle_info["sum_insured"])
-        page.pause()
 
         # ---- BUSINESS REGISTRATION NUMBER ----
         page.locator("mat-form-field").filter(has_text="Business Registration # *").locator("#id").fill(vehicle_data["mykad"])

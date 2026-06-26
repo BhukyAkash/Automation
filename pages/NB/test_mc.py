@@ -205,7 +205,6 @@ def test_mc_motor(page):
 
         # ----- Premiums -----
         sum_insured, act_prem, basic_prem, ncd, after_ncd, gross_premium, sst, stamp_duty, total = motor_prem(page)
-        page.pause()
 
         # ---- CHECK IF YES BUTTON EXISTS AND IS ENABLED ----
         try:

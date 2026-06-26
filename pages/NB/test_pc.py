@@ -145,6 +145,7 @@ def test_pc_motor(page):
         print(f"Market Value: {market_value}")
 
         # ---- VEHICLE SUM INSURED ----
+        page.wait_for_timeout(2000)
         sum_insured = str(market_value) if market_value > 5000 else "5000"
         print(f"Sum Insured: {sum_insured}")
 
@@ -207,17 +208,17 @@ def test_pc_motor(page):
 
         # ---- STATE ---- (runs for both cases)
         page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="Johor").click()
+        page.get_by_role("option", name=vehicle_info["state"]).click()
         page.wait_for_timeout(3000)
 
         # ---- PINCODE ----
         page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="81100").click()
+        page.get_by_role("option", name=vehicle_info["pin"]).click()
         page.wait_for_timeout(2000)
 
         # ---- STREET ADDRESS ----
         page.get_by_role("combobox", name="Address Line").click()
-        page.get_by_role("option", name="Taman Desa Harmoni", exact=True).click()
+        page.get_by_role("option", name=vehicle_info["adrs"], exact=True).click()
         page.wait_for_timeout(2000)
 
         # ---- SAVE BUTTON (if address is added) ----

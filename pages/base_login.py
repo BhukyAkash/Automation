@@ -182,6 +182,14 @@ def pa_prem(page):
     gross_premium = extract_myr(gp)
     print("Gross Premium:", gross_premium)
 
+    try:
+        re = page.locator("li").filter(has_text="Rebate").locator(".summary-result-value").inner_text().strip()
+        rebate = extract_myr(re)
+        print("Rebate:", rebate)
+    except:
+        rebate = None  
+        print("No Rebate")
+
     tax = page.locator("li").filter(has_text="SST").locator(".summary-result-value").inner_text().strip()
     sst = extract_myr(tax)
     print("SST:", sst)
@@ -194,4 +202,4 @@ def pa_prem(page):
     total = extract_myr(total_payable)
     print("Total Premium:", total)
 
-    return sum_insured, gross_premium, sst, stamp_duty, total
+    return sum_insured, gross_premium, rebate, sst, stamp_duty, total

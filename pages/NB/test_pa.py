@@ -236,7 +236,7 @@ def test_PA(page, pa_row):
         print("Policy Schedule downloaded successfully")
 
         # ---- SAVE TO EXCEL ----
-        pa_excel(selected_title, quote_number, policy_number, sum_insured,
+        pa_excel(selected_title, class_ques, quote_number, policy_number, sum_insured,
                 gross_premium, rebate, sst, stamp_duty, total)
 
         # ---- SEND EMAIL ----

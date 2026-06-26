@@ -161,7 +161,7 @@ def _write_motor(policy_type, coverage_label, quote_number, policy_number,
 # A=Serial  B=Auto  C=NV   D=PA   E=ProductType  F=Quote  G=Policy  H=Date
 # I=SumInsured  J=GrossPrem  K=Rebate  L=SST  M=StampDuty  N=Total
 # O=Auto(15)  P=Auto(16)
-def _write_pa(product_title, quote_number, policy_number,
+def _write_pa(selected_title, class_ques, quote_number, policy_number,
             sum_insured, gross_premium, rebate, sst, stamp_duty, total):
     file_path = os.path.join(BASE_DIR, "UATStability.xlsx")
     wb = load_workbook(file_path) if os.path.exists(file_path) else Workbook()
@@ -171,18 +171,19 @@ def _write_pa(product_title, quote_number, policy_number,
     ws.cell(row=row, column=1).value  = _serial(ws, row)
     ws.cell(row=row, column=3).value  = "NV"
     ws.cell(row=row, column=4).value  = "PA"
-    ws.cell(row=row, column=5).value  = product_title
-    ws.cell(row=row, column=6).value  = quote_number
-    ws.cell(row=row, column=7).value  = policy_number
-    ws.cell(row=row, column=8).value  = datetime.today().strftime("%d-%m-%Y")
-    ws.cell(row=row, column=9).value  = sum_insured
-    ws.cell(row=row, column=10).value = gross_premium  # J
-    ws.cell(row=row, column=11).value = rebate         # K
-    ws.cell(row=row, column=12).value = sst            # L
-    ws.cell(row=row, column=13).value = stamp_duty     # M
-    ws.cell(row=row, column=14).value = total          # N
+    ws.cell(row=row, column=5).value  = selected_title
+    ws.cell(row=row, column=6).value  = class_ques
+    ws.cell(row=row, column=7).value  = quote_number
+    ws.cell(row=row, column=8).value  = policy_number
+    ws.cell(row=row, column=9).value  = datetime.today().strftime("%d-%m-%Y")
+    ws.cell(row=row, column=10).value  = sum_insured
+    ws.cell(row=row, column=11).value = gross_premium  # J
+    ws.cell(row=row, column=12).value = rebate         # K
+    ws.cell(row=row, column=13).value = sst            # L
+    ws.cell(row=row, column=14).value = stamp_duty     # M
+    ws.cell(row=row, column=15).value = total          # N
 
-    _autofill_prev(ws, row, cols=[2, 15, 16])  # B, O, P
+    _autofill_prev(ws, row, cols=[2, 16, 17])  # B, O, P
     wb.save(file_path)
     print("PA: Quote and Policy numbers saved to Excel")
 
@@ -207,9 +208,9 @@ def _write_dental(quote_number, policy_number):
     print("Dental: Quote and Policy numbers saved to Excel")
 
 # ==== Public Output Functions ======
-def pa_excel(selected_title, quote_number, policy_number,
+def pa_excel(selected_title, class_ques, quote_number, policy_number,
             sum_insured, rebate, gross_premium, sst, stamp_duty, total):
-    _write_pa(selected_title, quote_number, policy_number,
+    _write_pa(selected_title, class_ques, quote_number, policy_number,
             sum_insured, rebate, gross_premium, sst, stamp_duty, total)
 
 def dental(quote_number, policy_number):

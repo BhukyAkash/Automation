@@ -3,6 +3,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
+import random
 from base_login import login, navi_pa, pa_prem
 from mykad_id import generate_mykad, child_mykad, young_mykad
 from test_mail import send_email
@@ -13,7 +14,7 @@ BASE_DIR = os.path.join(os.path.dirname(__file__), "..")
 DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 
 # ---- For multiple rows executions ---
-@pytest.mark.parametrize("pa_row", [2])
+@pytest.mark.parametrize("pa_row", [3])     # Test case row
 
 def test_PA(page, pa_row):
 
@@ -111,7 +112,7 @@ def test_PA(page, pa_row):
             page.locator(".mat-select-placeholder").click()
             page.get_by_role("option", name=plan_type).click()
         else:
-            raise ValueError(f"Unknown occupation class '{class_ques}' in PA sheet row 2. "
+            raise ValueError(f"Unknown occupation class '{class_ques}' in PA sheet row {pa_row}. "
                             f"Expected: Class 1, Class 2, Full-Time Student, Dependent")
 
         page.get_by_text("The Proposer/Person to be").click()
@@ -131,9 +132,6 @@ def test_PA(page, pa_row):
             page.wait_for_timeout(2000)
         except:
             pass
-
-        # ---- Premiums -------
-        sum_insured, gross_premium, sst, stamp_duty, total = pa_prem(page)
 
         # ---- CHECK IF ADDRESS ALREADY EXISTS ----
         add_button = page.locator("button[name='Add'], button:has-text('Add')").first
@@ -168,6 +166,12 @@ def test_PA(page, pa_row):
         page.get_by_role("textbox", name="123456789").fill("123456789")
         page.get_by_role("textbox", name="Enter").fill("akash@serole.com")
 
+        # rebate_value = str(random.randint(10, 25))
+        # rebate_locator = page.locator("mat-form-field").filter(has_text="Rebate to Proposer%").locator("#rebate")
+        # rebate_locator.click()
+        # rebate_locator.fill(rebate_value)
+        # print(f"Rebate: {rebate_value}%")
+
         # ---- UNDERWRITING QUESTIONS ----
         radios = page.get_by_role("radio", name="No")
         for i in range(5):
@@ -197,6 +201,9 @@ def test_PA(page, pa_row):
         print("Quote PDF Generated successfully")
 
         page.wait_for_timeout(10000)
+
+        # ---- Premiums -------
+        sum_insured, gross_premium, rebate, sst, stamp_duty, total = pa_prem(page)
 
         # ---- ISSUE POLICY & DOWNLOAD POLICY SCHEDULE ----
         page.get_by_role("button", name="Issue Policy").click()
@@ -230,13 +237,13 @@ def test_PA(page, pa_row):
 
         # ---- SAVE TO EXCEL ----
         pa_excel(selected_title, quote_number, policy_number, sum_insured,
-                gross_premium, sst, stamp_duty, total)
+                gross_premium, rebate, sst, stamp_duty, total)
 
         # ---- SEND EMAIL ----
-        try:
-            send_email()
-        except Exception as e:
-            print("Email failed:", e)
+        # try:
+        #     send_email()
+        # except Exception as e:
+        #     print("Email failed:", e)
 
     finally:
         page.get_by_text(username, exact=True).click()

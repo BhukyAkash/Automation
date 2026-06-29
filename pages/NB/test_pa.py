@@ -6,7 +6,7 @@ import pytest
 import random
 from base_login import login, navi_pa, pa_prem
 from mykad_id import generate_mykad, child_mykad, young_mykad
-from test_mail import send_email
+from vehicle_info import ADRESS
 from excel_utils import pa_excel, get_pa_data
 
 # ---- Path References ----
@@ -142,20 +142,20 @@ def test_PA(page, pa_row):
         except:
             pass
 
-        # ---- STATE ----
+        # ---- STATE ---- (runs for both cases)
         page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="Johor").click()
-        page.wait_for_timeout(2000)
+        page.get_by_role("option", name=ADRESS["state"]).click()
+        page.wait_for_timeout(3000)
 
         # ---- PINCODE ----
         page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="81100").click()
-        page.wait_for_timeout(1000)
+        page.get_by_role("option", name=ADRESS["pin"]).click()
+        page.wait_for_timeout(2000)
 
         # ---- STREET ADDRESS ----
         page.get_by_role("combobox", name="Address Line").click()
-        page.get_by_role("option", name="Taman Desa Harmoni", exact=True).click()
-        page.wait_for_timeout(1000)
+        page.get_by_role("option", name=ADRESS["adrs"], exact=True).click()
+        page.wait_for_timeout(2000)
 
         # ---- SAVE BUTTON (if address is added) ----
         address_save = page.get_by_role("button", name="Save")

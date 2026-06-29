@@ -59,21 +59,28 @@ def endo_navigation(page, product):
         print("**Performing Personal Accident Endorsement**")
 
 def incep_date(page):
-    inception_date = page.locator("input#inceptionDate").input_value().strip()
-    if inception_date:
-        print("Default Inception Date: ", inception_date)
-    else:
-        print("Inception Date is blank, setting today's date")
-        # today date
-        today = datetime.today()
-        # Angular Material aria-label format
-        aria_date = today.strftime("%B %d, %Y").replace(" 0", " ")
-        # Open calendar
-        page.locator("mat-form-field").filter(has_text="Inception Date") .get_by_label("Open calendar").click()   
-        # Select today
-        page.get_by_role("gridcell", name=aria_date).click()
-        inception_date = today.strftime("%d-%m-%Y")
-        print("Inception Date: ", inception_date)
+    # today date
+    today = datetime.today()
+    # Angular Material aria-label format
+    aria_date = today.strftime("%B %d, %Y").replace(" 0", " ")
+    # Open calendar
+    page.locator("mat-form-field").filter(has_text="Inception Date") .get_by_label("Open calendar").click()   
+    # Select today
+    page.get_by_role("gridcell", name=aria_date).click()
+    inception_date = today.strftime("%d-%m-%Y")
+    print("Inception Date: ", inception_date)
+
+def start_date(page):
+    # today date
+    today = datetime.today()
+    # Angular Material aria-label format
+    aria_date = today.strftime("%B %d, %Y").replace(" 0", " ")
+    # Open calendar
+    page.locator("mat-form-field").filter(has_text="Start Date").get_by_label("Open calendar").click()   
+    # Select today
+    page.get_by_role("gridcell", name=aria_date).click()
+    inception_date = today.strftime("%d-%m-%Y")
+    print("Inception Date: ", inception_date)
 
 def manager_approval(manager_page):
     manager_page.get_by_role("textbox", name="Username or email").fill("rahul@serole.com")
@@ -203,3 +210,26 @@ def pa_prem(page):
     print("Total Premium:", total)
 
     return sum_insured, gross_premium, rebate, sst, stamp_duty, total
+
+def dental_prem(page):
+    gp = page.locator("li").filter(has_text="Gross Premium").locator(".summary-result-value").inner_text().strip()
+    gross_premium = extract_myr(gp)
+    print("Gross Premium:", gross_premium)
+
+    re = page.locator("li").filter(has_text="Rebate").locator(".summary-result-value").inner_text().strip()
+    rebate = extract_myr(re)
+    print("Rebate:", rebate)
+
+    tax = page.locator("li").filter(has_text="SST").locator(".summary-result-value").inner_text().strip()
+    sst = extract_myr(tax)
+    print("SST:", sst)
+
+    sd = page.locator("li").filter(has_text="Stamp Duty").locator(".summary-result-value").inner_text().strip()
+    stamp_duty = extract_myr(sd)
+    print("Stamp Duty:", stamp_duty)
+
+    total_payable = page.locator("div").filter(has_text="Total Payable Premium").locator(".final-amount").inner_text().strip()
+    total = extract_myr(total_payable)
+    print("Total Premium:", total)
+
+    return gross_premium, rebate, sst, stamp_duty, total 

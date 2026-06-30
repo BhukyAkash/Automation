@@ -2,8 +2,9 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from base_login import login, navi_dental
+from base_login import login, navi_dental, start_date, dental_prem
 from mykad_id import generate_mykad
+from vehicle_info import ADRESS
 from excel_utils import dental
 
 # ---- Path References ----
@@ -16,15 +17,20 @@ def test_dental(page):
         username = login(page)
         navi_dental(page)
         print("Navigated to Dental")
+        page.evaluate("document.body.style.zoom = '75%'")
 
         page.wait_for_timeout(5000)
 
         # ---- MyKad -----
         mykad = generate_mykad()
         page.locator("mat-form-field").filter(has_text="ID #").locator("#dx-input-0").fill(mykad)
+        print("MY Kad ID: ", mykad)
 
         # --- Insured Name ----
         page.locator("mat-form-field").filter(has_text="Name as per ID").locator("#dx-input-1").fill("Dental Shield")
+
+        # ---- Inception Date ------
+        start_date(page)
 
         # # ---- INCEPTION DATE ----
         # date_field = page.locator("input#inceptionDate")
@@ -52,18 +58,18 @@ def test_dental(page):
 
         # ---- STATE ---- (runs for both cases)
         page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="Johor").click()
-        page.wait_for_timeout(2000)
+        page.get_by_role("option", name=ADRESS["state"]).click()
+        page.wait_for_timeout(3000)
 
         # ---- PINCODE ----
         page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="81100").click()
-        page.wait_for_timeout(1000)
+        page.get_by_role("option", name=ADRESS["pin"]).click()
+        page.wait_for_timeout(2000)
 
         # ---- STREET ADDRESS ----
         page.get_by_role("combobox", name="Address Line").click()
-        page.get_by_role("option", name="Taman Desa Harmoni", exact=True).click()
-        page.wait_for_timeout(1000)
+        page.get_by_role("option", name=ADRESS["adrs"], exact=True).click()
+        page.wait_for_timeout(2000)
 
         # ---- SAVE BUTTON (if address is added) ----
         address_save = page.get_by_role("button", name="Save")
@@ -91,6 +97,9 @@ def test_dental(page):
         download.save_as(os.path.join(DOWNLOADS_DIR, "Dental_quote.pdf"))
         page.get_by_text("close", exact=True).click()
         print("Quote PDF Generated successfully")
+
+        # ---- Premiums -----
+        gross_premium, rebate, sst, stamp_duty, total = dental_prem(page)
 
         # ---- Get Quote Number ----
         quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
@@ -124,7 +133,7 @@ def test_dental(page):
         print("Policy Number:", policy_number)
 
         # --- Save to Excel ----
-        dental(quote_number, policy_number)
+        dental(mykad, quote_number, policy_number, gross_premium, rebate, sst, stamp_duty, total)
 
     finally:
         page.get_by_text(username, exact=True).click()

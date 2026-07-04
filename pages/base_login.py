@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 
 def login(page):
-    page.goto("https://ath-uat.tuneinsurance.com/realms/tune/protocol/openid-connect/auth?response_type=code&client_id=1003&state=VEJYMU9YQ3pVaGZGemotRTNLMGN4OHhFaXc3ZmQ1cldaRXRFMG4wbDJBT0Rr&redirect_uri=https%3A%2F%2Fagent-uat.tuneinsurance.com%2F%23%2Fhome&scope=openid%20profile&code_challenge=TSCey8KaEFyGzZ5lgGfWXplgcJ1ivvARav8R4bnYPfM&code_challenge_method=S256&nonce=VEJYMU9YQ3pVaGZGemotRTNLMGN4OHhFaXc3ZmQ1cldaRXRFMG4wbDJBT0Rr")
+    page.goto("https://agent-uat.tuneinsurance.com/")
     username = "playwright.test@serole.com" #"vijaykumar.likki@serole.com"        # 
     page.get_by_role("textbox", name="Username or email").fill(username)
     page.get_by_role("textbox", name="Password").fill("Serole@321")

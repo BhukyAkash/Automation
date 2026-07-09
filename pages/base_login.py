@@ -83,7 +83,8 @@ def start_date(page):
     print("Inception Date: ", inception_date)
 
 def manager_approval(manager_page):
-    manager_page.get_by_role("textbox", name="Username or email").fill("rahul@serole.com")
+    bm_user = "rahul@serole.com"
+    manager_page.get_by_role("textbox", name="Username or email").fill(bm_user)
     manager_page.get_by_role("textbox", name="Password").fill("Serole@123")
     manager_page.get_by_role("button", name="Login").click()
     manager_page.wait_for_timeout(25000)
@@ -91,6 +92,11 @@ def manager_approval(manager_page):
     manager_page.get_by_role("button", name="Accept & Process").click()
     print("Manager approval done")
     manager_page.wait_for_timeout(10000)
+    # --- Manager Logout ---
+    manager_page.get_by_text(bm_user, exact=True).click()
+    manager_page.get_by_text("Sign Out", exact=True).click()
+    print("Terminated the Manager session")
+    manager_page.wait_for_timeout(5000)
     manager_page.close()
 
 def issue_policy(page):
@@ -124,6 +130,9 @@ def issue_policy(page):
 
             # Only reload if policy not found
             page.reload()
+            ip = page.get_by_role("button", name="Issue Policy")
+            if ip.is_visible():
+                ip.click()
             page.wait_for_timeout(interval * 1000)
             elapsed += interval
 

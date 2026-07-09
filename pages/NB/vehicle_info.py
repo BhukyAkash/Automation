@@ -4,9 +4,11 @@ VEHICLE_INFO = {
         "place_of_use": "Melaka",
 
         # ---- Make / Model / Year ----
-        "change_vehicle": True,
+        "change_vehicle": False,
         "make": "BMW",
         "model": "M4",
+
+        "year_of_manufacture": False,
         "year": "2020",
 
         # ---- Capacities ----
@@ -14,17 +16,20 @@ VEHICLE_INFO = {
         "seating_capacity": "2",
 
         # ---- Coverage ----
-        "change_coverage": True,
-        "coverage_type": "TP, Fire & Theft",  # "Comprehensive" or "TP, Fire & Theft"
+        "change_coverage": False,
+        "coverage_type": "Comprehensive",  # "Comprehensive" or "TP, Fire & Theft" "Third Party"
+
     },
     "MC": {
         # ---- Vehicle Search ----
         "place_of_use": "Melaka",
 
         # ---- Make / Model / Year ----
-        "change_vehicle": True,
+        "change_vehicle": False,
         "make": "HONDA",
         "model": "SL",
+
+        "year_of_manufacture": True,
         "year": "2020",
 
         # ---- Capacities ----
@@ -32,8 +37,9 @@ VEHICLE_INFO = {
         "seating_capacity": "2",
 
         # ---- Coverage ----
-        "change_coverage": False,
-        "coverage_type": "Comprehensive",  # "Comprehensive" or "TP, Fire & Theft"
+        "change_coverage": True,
+        "coverage_type": "Comprehensive",  # "Comprehensive" or "Third Party"
+
     },
     "CV": {
         # ---- Vehicle Search ----
@@ -48,8 +54,8 @@ VEHICLE_INFO = {
         "chassis_no": "34576657",
 
         # ---- Make / Model / Year ----
-        "make": "VOLVO",
-        "model": "F16",
+        "make": "OPEL",
+        "model": "FRONTERA",
         "year": "2015",
         "variant": "NA",
 
@@ -64,13 +70,19 @@ VEHICLE_INFO = {
 
         # ---- Coverage ----
         "change_coverage": True,
-        "coverage_type": "TP, Fire & Theft",  # "Comprehensive" or "TP, Fire & Theft"
+        "coverage_type": "Comprehensive",  # "Comprehensive" or "TP, Fire & Theft"
 
         # --- Sum Insured ---
-        "sum_insured": "25000"
+        "sum_insured": "45000",
     }
 }
 
+ADRESS = {
+    # ---- Policy Holder Address ----
+    "state": "Perlis",
+    "pin": "01500",
+    "adrs": "DYMM Tuanku Raja Perlis"
+}
 
 def get_vehicle_info(vehicle_type: str) -> dict:
     if vehicle_type not in VEHICLE_INFO:
@@ -80,13 +92,12 @@ def get_vehicle_info(vehicle_type: str) -> dict:
         )
     return VEHICLE_INFO[vehicle_type]
 
-
 AUTOMATION_FLAGS = {
 
     "MC": {
         "explore_extensions":   True,   # Click on Extension Coverage button?
-        "select_autobuddy":     False,   # Select Motorcyclist PA Contract?
-        "select_extensions":    False,   # Select individual extensions?
+        "select_autobuddy"  :   False,   # Select Motorcyclist PA Contract?
+        "select_extensions" :   False,   # Select individual extensions?
     },
 
     "PC": {

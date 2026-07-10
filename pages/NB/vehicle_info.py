@@ -69,19 +69,12 @@ VEHICLE_INFO = {
         "carriage_goods": "Beverages Bottles",
 
         # ---- Coverage ----
-        "change_coverage": True,
-        "coverage_type": "Comprehensive",  # "Comprehensive" or "TP, Fire & Theft"
+        "change_coverage": False,
+        "coverage_type": "TP, Fire & Theft",  # "Comprehensive" or "TP, Fire & Theft"
 
         # --- Sum Insured ---
         "sum_insured": "45000",
     }
-}
-
-ADRESS = {
-    # ---- Policy Holder Address ----
-    "state": "Perlis",
-    "pin": "01500",
-    "adrs": "DYMM Tuanku Raja Perlis"
 }
 
 def get_vehicle_info(vehicle_type: str) -> dict:
@@ -112,3 +105,116 @@ AUTOMATION_FLAGS = {
         "select_extensions":    False,  # Select individual extensions?
     },
 }
+
+ADRESS = {
+    # ---- Policy Holder Address ----
+    "state": "Perlis",
+    "pin"  : "01500",
+    "adrs" : "DYMM Tuanku Raja Perlis"
+}
+
+def motor_ph_adrs(page):
+
+    # ---- Policyholder Residential Address section ---
+    section = page.locator("div.mt-3", has_text="Policyholder Residential Address")
+    print("Matched section count:", section.count())
+
+    # --- Address Count of Policy Holder ----- 
+    address_cards = section.locator("app-address-details")
+    address_count = address_cards.count()
+    print("Address Count: ", address_count)
+
+    for i in range(address_count):
+        card = address_cards.nth(i)
+        text = card.inner_text().strip()
+        print(f"Address {i+1}: '{text}'")
+
+    # Error is section-level, not per-card
+    error_locator = section.locator(".error-color", has_text="Please provide the complete address information")
+    has_error = error_locator.count() > 0
+    print(f"Section has error: {has_error}")
+
+    # ---- If no address present, OR existing address is incomplete, fill new address ----
+    if address_count == 0 or has_error:
+        add_button = section.get_by_role("button", name="Add")
+
+        if add_button.count() > 0:
+            add_button.click()
+            page.wait_for_timeout(1000)
+        else:
+            print("No 'Add' button found")
+
+        # ---- STATE ----
+        page.locator(".mat-select-placeholder").first.click()
+        page.get_by_role("option", name=ADRESS["state"]).click()
+        page.wait_for_timeout(3000)
+
+        # ---- PINCODE ----
+        page.locator(".mat-select-placeholder").first.click()
+        page.get_by_role("option", name=ADRESS["pin"]).click()
+        page.wait_for_timeout(2000)
+
+        # ---- STREET ADDRESS ----
+        page.get_by_role("combobox", name="Address Line").first.click()
+        page.get_by_role("option", name=ADRESS["adrs"], exact=True).click()
+        page.wait_for_timeout(2000)
+
+        # ---- SAVE BUTTON ----
+        address_save = page.locator("#save")
+        if address_save.is_visible():
+            address_save.click()
+    else:
+        print("Complete address already present — proceeding without changes.")
+
+def pa_ph_adrs(page):
+    # ---- Proposer Residential Address section ---
+    section = page.locator("div.mt-3", has_text="Proposer Residential Address")
+    print("Matched section count:", section.count())
+    print("Add button count inside section:", section.get_by_role("button", name="Add").count())
+
+    # --- Address Count of Policy Holder ----- 
+    address_cards = section.locator("app-address-details-card")
+    address_count = address_cards.count()
+    print("Address Count: ", address_count)
+
+    for i in range(address_count):
+        card = address_cards.nth(i)
+        text = card.locator(".subbody").inner_text().strip()
+        print(f"Address {i+1}: '{text}'")
+
+    # Error is section-level, not per-card
+    error_locator = section.locator(".error-color", has_text="Please provide the complete address information")
+    has_error = error_locator.count() > 0
+    print(f"Section has error: {has_error}")
+
+    # ---- If no address present, OR existing address is incomplete, fill new address ----
+    if address_count == 0 or has_error:
+        add_button = section.get_by_role("button", name="Add")
+
+        if add_button.count() > 0:
+            add_button.click()
+            page.wait_for_timeout(1000)
+        else:
+            print("No 'Add' button found")
+
+        # ---- STATE ----
+        page.locator(".mat-select-placeholder").first.click()
+        page.get_by_role("option", name=ADRESS["state"]).click()
+        page.wait_for_timeout(1000)
+
+        # ---- PINCODE ----
+        page.locator(".mat-select-placeholder").first.click()
+        page.get_by_role("option", name=ADRESS["pin"]).click()
+        page.wait_for_timeout(1000)
+
+        # ---- STREET ADDRESS ----
+        page.get_by_role("combobox", name="Address Line").first.click()
+        page.get_by_role("option", name=ADRESS["adrs"], exact=True).click()
+        page.wait_for_timeout(1000)
+
+        # ---- SAVE BUTTON ----
+        address_save = page.locator("#save")
+        if address_save.is_visible():
+            address_save.click()
+    else:
+        print("Complete address already present — proceeding without changes.")

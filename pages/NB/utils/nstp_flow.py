@@ -85,7 +85,6 @@ def nstp_flow(page, quote_number, vehicle_type):
             uw.pqm_logout(sap_uw_page1)
             # --- Logout of PM ----
             uw.pm_logout(sap_page)
-            page.pause()
             page.wait_for_timeout(3000)
 
             # ---- Back button in Agent ----
@@ -98,6 +97,85 @@ def nstp_flow(page, quote_number, vehicle_type):
         # === For Other Status ====
         else:
             print(status)
+        
+    # ---- Quote status printing -----
+    re_status =  page.locator("dx-status span[dxstatuschip]").inner_text().strip()
+    print("After approval Quote Status:", re_status)
+
+def pa_nstp_flow(page, quote_number):
+
+    submit_approval_btn = page.get_by_role("button", name="Submit for TPM Staff Approval")
+    # ---- Submit for TPM staff approval button -----
+    if submit_approval_btn.is_visible():
+        submit_approval_btn.click()
+        print("Clicked on Submit for TPM Staff Approval button")
+        page.wait_for_timeout(25000)
+
+        page.wait_for_function("""
+        () => {
+            const status = document.querySelector("span.mx-2");
+            return status &&
+                (status.textContent.includes("Referred") ||
+                    status.textContent.includes("Submitted For Review"));
+        }
+        """, timeout=60000)
+
+        # ---- Quote status printing -----
+        status = page.locator("span.mx-2").inner_text().strip()
+        print("Quote Status: ", status)
+
+        # === Quote Status - Submitted For Review ======
+        if status == "Submitted For Review":
+            browser = page.context.browser
+            manager_context = browser.new_context(no_viewport = True)
+            manager_page = manager_context.new_page()
+            manager_page.goto(f"https://agent-uat.tuneinsurance.com/#/qms/quote/medical/personal/verify?edit=true&quoteNr={quote_number}")
+
+            manager_approval(manager_page)
+
+            # ---- Back button in Agent ----
+            page.get_by_role("button", name="Back").click()
+            print("Navigated to Back for Quote letter")
+            page.wait_for_timeout(3000)
+
+        # === Quote Status - Referred ======
+        elif status == "Referred":
+            # ---- Submission Number ----
+            submission_no = (page.locator("div.-first").filter(has_text="Submission #").locator("div.summary-result").nth(1).text_content().strip())
+            print("Submission Number: ", submission_no)
+
+            # --- SAP Browser Launch ----
+            browser = page.context.browser
+            sap_context = browser.new_context(no_viewport=True)
+            sap_page = sap_context.new_page()
+
+            # ---- Import of SAP - PQM ----
+            uw = UW_SAP()
+            # --- First login ----
+            uw.first_login(sap_page)
+            # --- Second login ----
+            uw.second_login(sap_page)
+            # --- Navigation to Underwriting Worklist ----
+            sap_uw_page1 = uw.navigate_to_uw(sap_page)
+            # --- Search of Submission number ----
+            uw.approving(sap_uw_page1, submission_no)
+            # ---- Logout of PQM ---
+            uw.pqm_logout(sap_uw_page1)
+            # --- Logout of PM ----
+            uw.pm_logout(sap_page)
+            page.wait_for_timeout(3000)
+
+            # ---- Back button in Agent ----
+            page.get_by_role("button", name="Back").click()
+            print("Navigated to Back for Quote letter")
+            page.wait_for_timeout(5000)
+            page.get_by_role("button", name="Next").click()
+            page.wait_for_timeout(5000)
+
+        # === For Other Status ====
+        else:
+            pass
+
 
 class UW_SAP:
     def first_login(self, page):

@@ -3,11 +3,11 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from base_login import incep_date, issue_policy, login, navigation, cv_moto, motor_prem
-from excel_utils import get_vehicle_data, cv_excel, mark_policy_issued, reset_on_error
-from vehicle_info import get_vehicle_info, AUTOMATION_FLAGS
-from extension import cv_extension
-from nstp_flow import nstp_flow
-from test_mail import send_email
+from utils.excel_utils import get_vehicle_data, cv_excel, mark_policy_issued, reset_on_error
+from vehicle_info import get_vehicle_info, AUTOMATION_FLAGS, motor_ph_adrs
+from utils.extension import cv_extension
+from utils.nstp_flow import nstp_flow
+from utils.test_mail import send_email
 
 # ---- Path References ----
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..")               # D:\Automation\pages
@@ -37,6 +37,9 @@ def test_cv_motor(page):
 
         print(f"Vehicle Regio: {vehicle_data["vehicle_reg_no"]}")
         print(f"MY KadID: {vehicle_data["mykad"]}")
+
+        # ---- START NETWORK LOGGING (bp, ncdRequestV2, quote) ----
+        page.net_logger.set_vehicle_reg(vehicle_data["vehicle_reg_no"])
 
         page.get_by_role("textbox").first.fill(vehicle_data["vehicle_reg_no"])
 
@@ -94,6 +97,10 @@ def test_cv_motor(page):
         # ---- Carrying Capacity ----
         page.locator("input#carryingCapacity").fill(vehicle_info["carrying_capacity"])
 
+        sc = page.locator('input#seatCapacity').input_value().strip()
+        cc = page.locator('input#cc').input_value().strip()
+        print(f"Engine & Seating Capacity: {cc} || {sc}")
+
         page.locator("mat-select#loadCarrying").click()
         page.get_by_role("option", name=vehicle_info["carrying_capacity_unit"]).click()
 
@@ -103,6 +110,9 @@ def test_cv_motor(page):
 
         # ---- Save Vehicle Info Button ----
         page.get_by_role("button", name="Save Vehicle Info").click()
+
+        # ----- Minimize Screen ----
+        page.evaluate("document.body.style.zoom = '75%'")
 
 
         # ========== SECOND SCREEN ==========
@@ -174,35 +184,8 @@ def test_cv_motor(page):
         # ----- Premiums -----
         sum_insured, act_prem, basic_prem, ncd, after_ncd, gross_premium, sst, stamp_duty, total = motor_prem(page)
 
-        # ---- CHECK IF ADDRESS ALREADY EXISTS ----
-        try:
-            add_button = page.locator("button[name='Add'], button:has-text('Add')").first
-            add_button.wait_for(state="visible", timeout=5000)
-            add_button.click()
-            print("Add button clicked")
-            page.wait_for_timeout(2000)
-        except:
-            print("Add button not visible, skipping")
-
-        # ---- STATE ---- (runs for both cases)
-        page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="Johor").click()
-        page.wait_for_timeout(2000)
-
-        # ---- PINCODE ----
-        page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="81100").click()
-        page.wait_for_timeout(1000)
-
-        # ---- STREET ADDRESS ----
-        page.get_by_role("combobox", name="Address Line").click()
-        page.get_by_role("option", name="Taman Desa Harmoni", exact=True).click()
-        page.wait_for_timeout(1000)
-
-        # ---- SAVE BUTTON (if address is added) ----
-        address_save = page.locator("button#save")
-        if address_save.is_visible():
-            address_save.click()
+        # ---- Policyholder Residential Adress ---
+        motor_ph_adrs(page)
 
         # ---- Declaration Statements ----
         page.get_by_text("We respect your privacy and").click()
@@ -213,10 +196,14 @@ def test_cv_motor(page):
         quote_number = quote_text.strip()
         print("Quote Number:", quote_number)
 
+        # ---- Create Quotenr_vl ----
+        page.net_logger.set_quote_number(quote_number)
+
         # ====== NSTP FLOW FUNCTION CALL ======
         generate_quote_btn = nstp_flow(page, quote_number, vehicle_type="cv")
 
         # ---- Generate Quote Flow ----
+        generate_quote_btn = page.get_by_role("button", name="Generate Quote")
         if generate_quote_btn.is_visible():
             generate_quote_btn.click()
             print("STP process, clicked on Generate Quote button")
@@ -240,6 +227,9 @@ def test_cv_motor(page):
 
         print("Policy is Issued and Schedule letter downloaded successfully.")
 
+        # --- Issue Policy Service call ----
+        page.net_logger.set_policy_number(policy_number)
+
         
         # --------- SAVE TO EXCEL ---------
         cv_excel(selected_coverage, quote_number, policy_number,
@@ -248,10 +238,10 @@ def test_cv_motor(page):
 
 
         # -------- SEND EMAIL ---------
-        try:
-            send_email()
-        except Exception as e:
-            print("Email failed:", e)
+        # try:
+        #     send_email()
+        # except Exception as e:
+        #     print("Email failed:", e)
 
 
     except Exception as e:

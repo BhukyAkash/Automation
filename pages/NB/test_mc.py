@@ -2,11 +2,12 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from excel_utils import get_vehicle_data, mc_excel, mark_policy_issued, reset_on_error
+from utils.excel_utils import get_vehicle_data, mc_excel, mark_policy_issued, reset_on_error
 from base_login import incep_date, login, navigation, pc_moto, issue_policy, motor_prem
-from vehicle_info import get_vehicle_info, AUTOMATION_FLAGS
-from extension import mc_extension
-from test_mail import send_email
+from vehicle_info import get_vehicle_info, AUTOMATION_FLAGS, motor_ph_adrs
+from utils.extension import mc_extension
+from utils.nstp_flow import nstp_flow
+from utils.test_mail import send_email
 
 # ---- Path References ----
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..")               # D:\Automation\pages
@@ -36,6 +37,10 @@ def test_mc_motor(page):
         print(f"Vehicle Regio: {vehicle_data["vehicle_reg_no"]}")
         print(f"MY KadID: {vehicle_data["mykad"]}")
 
+        # ---- START NETWORK LOGGING (bp, ncdRequestV2, quote) ----
+        page.net_logger.set_vehicle_reg(vehicle_data["vehicle_reg_no"])
+
+        # ---- FILL VEHICLE REGISTRATION NUMBER ----
         page.get_by_role("textbox").first.fill(vehicle_data["vehicle_reg_no"])
 
         #---- Place of Use ----
@@ -44,11 +49,14 @@ def test_mc_motor(page):
 
         # ---- Vehicle Search ----
         page.get_by_role("button", name="search Vehicle Search").click()
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(5000)
 
-        page.get_by_role("menuitem", name="edit").click()
-        page.get_by_role("button", name="Proceed").click()
-        page.wait_for_timeout(2000)
+        try:
+            page.get_by_role("menuitem", name="edit").click(timeout=7000)
+            page.get_by_role("button", name="Proceed").click()
+            page.wait_for_timeout(2000)
+        except:
+            pass
 
         # ---- MAKE / MODEL / YEAR ----
         if vehicle_info["change_vehicle"]:
@@ -67,7 +75,10 @@ def test_mc_motor(page):
                 page.wait_for_timeout(1000)
             else:
                 print("Model dropdown not visible, skipping")
+        else:
+            pass
 
+        if vehicle_info["year_of_manufacture"]:
             year_dropdown = page.locator("mat-select#year")
             if year_dropdown.is_visible():
                 year_dropdown.click()
@@ -93,9 +104,8 @@ def test_mc_motor(page):
             if current_value == "" or current_value == "0":
                 cc_input.dblclick()
                 cc_input.fill(vehicle_info["engine_capacity"])
-                print(f"Engine Capacity filled: {vehicle_info['engine_capacity']}")
             else:
-                print(f"Engine Capacity: {current_value}")
+                pass
 
         # --- Seating Capacity field ----
         seat_input = page.locator('input#seatCapacity')
@@ -104,9 +114,12 @@ def test_mc_motor(page):
             if current_value == "" or current_value == "0":
                 seat_input.dblclick()
                 seat_input.fill(vehicle_info["seating_capacity"])
-                print(f"Seating Capacity filled: {vehicle_info['seating_capacity']}")
             else:
-                print(f"Seating Capacity: {current_value}")
+                pass
+
+        sc = page.locator('input#seatCapacity').input_value().strip()
+        cc = page.locator('input#cc').input_value().strip()
+        print(f"Engine & Seating Capacity: {cc} || {sc}")
 
         # ---- Vehicle Age from input (Screen 1) ----
         vehicle_age_text = ""
@@ -123,19 +136,9 @@ def test_mc_motor(page):
             search_vehicle.click()
         except:
             print("Save Vehicle Info button not available")
-
-        # ---- Vehicle Age from span (Screen 2 fallback) ----
-        if not vehicle_age_text:    
-            try:
-                page.locator("span.status-text").first.wait_for(state="visible", timeout=10000)
-                spans = page.locator("span.status-text").all()
-                vehicle_age_text = spans[6].inner_text().strip()
-            except:
-                vehicle_age_text = "0"
-                print("Vehicle Age not found, defaulting to 0")
-
-        vehicle_age = int(vehicle_age_text) if vehicle_age_text else 0
-        print(f"Vehicle Age: {vehicle_age} years")
+        
+        # ----- Minimize Screen ----
+        page.evaluate("document.body.style.zoom = '75%'")
 
 
         # ========== SECOND SCREEN ==========
@@ -145,7 +148,7 @@ def test_mc_motor(page):
         print("Default Coverage type: ", selected_coverage)
 
         # ---- COVERAGE TYPE (change only if default is not Third Party) ----
-        if vehicle_info["change_coverage"] and selected_coverage != "Third Party":
+        if vehicle_info["change_coverage"] and selected_coverage != vehicle_info["coverage_type"]:
             page.locator("#mat-select-value-9").click()
             page.get_by_role("option", name=vehicle_info["coverage_type"]).click()
             print(f"Coverage type changed to: {vehicle_info['coverage_type']}")
@@ -216,48 +219,33 @@ def test_mc_motor(page):
         except:
             print("Yes button not visible, skipping")
 
-        # ---- CHECK IF ADDRESS ALREADY EXISTS ----
-        try:
-            add_button = page.locator("button[name='Add'], button:has-text('Add')").first
-            add_button.wait_for(state="visible", timeout=5000)
-            add_button.click()
-            print("Add button clicked")
-            page.wait_for_timeout(2000)
-        except:
-            print("Add button not visible, skipping")
-
-        # ---- STATE ---- (runs for both cases)
-        page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="Johor").click()
-        page.wait_for_timeout(3000)
-
-        # ---- PINCODE ----
-        page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name="81100").click()
-        page.wait_for_timeout(2000)
-
-        # ---- STREET ADDRESS ----
-        page.get_by_role("combobox", name="Address Line").click()
-        page.get_by_role("option", name="Taman Desa Harmoni", exact=True).click()
-        page.wait_for_timeout(2000)
-
-        # ---- SAVE BUTTON (if address is added) ----
-        address_save = page.locator("button#save")
-        if address_save.is_visible():
-            address_save.click()
+        # ---- Policyholder Residential Adress ---
+        motor_ph_adrs(page)
 
         # Locate the element that contains the quote reference
         quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
         quote_number = quote_text.strip()
         print("Quote Number:", quote_number)
 
+        # ---- Create Quotenr_vl ----
+        page.net_logger.set_quote_number(quote_number)
+
         # ---- DECLARATION STATEMENTS ----
         page.get_by_text("We respect your privacy and").click()
         page.get_by_text("I hereby confirm that I have").click()
 
-        # ---- GENERATE & DOWNLOAD QUOTE -----
-        page.get_by_role("button", name="Generate Quote").click()
-        page.wait_for_timeout(5000)
+        # ---- Policy Holder Name ----
+        ph_name = page.locator(".qms-canvas-card-title-wrapper .heading-6").first.inner_text().strip()
+        print("Policy Holder name: ", ph_name)
+
+        # ====== NSTP FLOW FUNCTION CALL ======
+        nstp_flow(page, quote_number, vehicle_type="mc")
+
+        # ---- Generate Quote Flow ----
+        generate_quote_btn = page.get_by_role("button", name="Generate Quote")
+        if generate_quote_btn.is_visible():
+            generate_quote_btn.click()
+            print("Clicked on Generate Quote button")
 
         with page.expect_download() as download_info:
             page.get_by_role("button", name="Submit").click()
@@ -280,16 +268,19 @@ def test_mc_motor(page):
         
         print("Policy is Issued and Schedule letter downloaded successfully.")
 
+        # --- Issue Policy Service call ----
+        page.net_logger.set_policy_number(policy_number)
+
         # --------- SAVE TO EXCEL ---------
         mc_excel(selected_coverage, quote_number, policy_number,
         sum_insured, act_prem, basic_prem, ncd,
         after_ncd, gross_premium, sst, stamp_duty, total)
 
         # -------- SEND EMAIL ---------
-        try:
-            send_email()
-        except Exception as e:
-            print("Email failed:", e)
+        # try:
+        #     send_email()
+        # except Exception as e:
+        #     print("Email failed:", e)
 
     except Exception as e:
         print(f"Test failed: {e}")

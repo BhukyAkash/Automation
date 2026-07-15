@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from base_login import incep_date, issue_policy, login, navigation, cv_moto, motor_prem
 from utils.excel_utils import get_vehicle_data, cv_excel, mark_policy_issued, reset_on_error
-from vehicle_info import get_vehicle_info, AUTOMATION_FLAGS, motor_ph_adrs
+from vehicle_info import get_vehicle_info, AUTOMATION_FLAGS, motor_business_adrs
 from utils.extension import cv_extension
 from utils.nstp_flow import nstp_flow
 from utils.test_mail import send_email
@@ -185,7 +185,7 @@ def test_cv_motor(page):
         sum_insured, act_prem, basic_prem, ncd, after_ncd, gross_premium, sst, stamp_duty, total = motor_prem(page)
 
         # ---- Policyholder Residential Adress ---
-        motor_ph_adrs(page)
+        motor_business_adrs(page)
 
         # ---- Declaration Statements ----
         page.get_by_text("We respect your privacy and").click()

@@ -3,11 +3,10 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from base_login import incep_date, issue_policy, login, navigation, pc_moto, motor_prem
-from vehicle_info import get_vehicle_info, AUTOMATION_FLAGS
-from excel_utils import get_vehicle_data, pc_excel, mark_policy_issued, reset_on_error
-from extension import pc_extension
-from nstp_flow import nstp_flow
-from test_mail import send_email
+from vehicle_info import get_vehicle_info, AUTOMATION_FLAGS, motor_ph_adrs
+from utils.excel_utils import get_vehicle_data, pc_excel, mark_policy_issued, reset_on_error
+from utils.extension import pc_extension
+from utils.nstp_flow import nstp_flow
 
 
 # ---- Path References ----
@@ -38,6 +37,11 @@ def test_pc_motor(page):
         print(f"Vehicle Regio: {vehicle_data["vehicle_reg_no"]}")
         print(f"MY KadID: {vehicle_data["mykad"]}")
 
+        # ---- BP & NCDRequestV2 Service Logs  ----
+        page.net_logger.set_vehicle_reg(vehicle_data["vehicle_reg_no"])
+
+        # ----- Input of Vehicle Regio -------
+        page.wait_for_load_state("networkidle")
         page.get_by_role("textbox").first.fill(vehicle_data["vehicle_reg_no"])
 
         # ---- Place of Use ----
@@ -47,6 +51,13 @@ def test_pc_motor(page):
         # ---- Vehicle Search ----
         page.get_by_role("button", name="search Vehicle Search").click()
         page.wait_for_timeout(5000)
+
+        try:
+            page.get_by_role("menuitem", name="edit").click(timeout=2000)
+            page.get_by_role("button", name="Proceed").click()
+            page.wait_for_timeout(2000)
+        except:
+            pass
 
         # ---- MAKE / MODEL / YEAR ----
         if vehicle_info["change_vehicle"]:
@@ -66,6 +77,10 @@ def test_pc_motor(page):
             else:
                 print("Model dropdown not visible, skipping")
 
+        else:
+            pass
+
+        if vehicle_info["year_of_manufacture"]:
             year_dropdown = page.locator("mat-select#year")
             if year_dropdown.is_visible():
                 year_dropdown.click()
@@ -88,9 +103,8 @@ def test_pc_motor(page):
             if current_value == "" or current_value == "0":
                 cc_input.dblclick()
                 cc_input.fill(vehicle_info["engine_capacity"])
-                print(f"Engine Capacity filled: {vehicle_info['engine_capacity']}")
             else:
-                print(f"Engine Capacity: {current_value}")
+                pass
 
         # --- Seating Capacity field ----
         seat_input = page.locator('input#seatCapacity')
@@ -99,9 +113,12 @@ def test_pc_motor(page):
             if current_value == "" or current_value == "0":
                 seat_input.dblclick()
                 seat_input.fill(vehicle_info["seating_capacity"])
-                print(f"Seating Capacity filled: {vehicle_info['seating_capacity']}")
             else:
-                print(f"Seating Capacity: {current_value}")
+                pass
+
+        sc = page.locator('input#seatCapacity').input_value().strip()
+        cc = page.locator('input#cc').input_value().strip()
+        print(f"Engine & Seating Capacity: {cc} || {sc}")
 
         # ---- Vehicle Age (for logging only) ----
         vehicle_age_locator = page.locator("mat-form-field").filter(has_text="Vehicle Age").locator("#vehicleAge")
@@ -118,6 +135,9 @@ def test_pc_motor(page):
             page.wait_for_load_state("networkidle")
         except:
             print("Save Vehicle Info button not available")
+
+        # ----- Minimize Screen ----
+        page.evaluate("document.body.style.zoom = '75%'")
 
         # ========== SECOND SCREEN ==========
 
@@ -146,11 +166,15 @@ def test_pc_motor(page):
 
         # ---- VEHICLE SUM INSURED ----
         page.wait_for_timeout(2000)
-        sum_insured = str(market_value) if market_value > 5000 else "5000"
-        print(f"Sum Insured: {sum_insured}")
+        if "Third Party" not in selected_coverage:
+            page.wait_for_timeout(2000)
+            sum_insured = str(market_value) if market_value > 5000 else "5000"
+            print(f"Sum Insured: {sum_insured}")
 
-        page.locator("dx-input-currency").filter(has_text="* Vehicle Sum Insured *").locator("#sumInsured").click()
-        page.locator("dx-input-currency").filter(has_text="* Vehicle Sum Insured *").locator("#sumInsured").fill(sum_insured)
+            page.locator("dx-input-currency").filter(has_text="* Vehicle Sum Insured *").locator("#sumInsured").click()
+            page.locator("dx-input-currency").filter(has_text="* Vehicle Sum Insured *").locator("#sumInsured").fill(sum_insured)
+        else:
+            print("Third Party coverage selected")
 
         #---- MYKAD ID ----
         page.locator("mat-form-field").filter(has_text="ID # * help").locator("#id").fill(vehicle_data["mykad"])
@@ -200,32 +224,8 @@ def test_pc_motor(page):
                 yes_button.click()
                 page.wait_for_timeout(1000)
 
-        # ---- CHECK IF ADDRESS ALREADY EXISTS ----
-        add_button = page.locator("button[name='Add'], button:has-text('Add')").first
-        if add_button.is_visible():
-            add_button.click()
-            page.wait_for_timeout(1000)
-
-        # ---- STATE ---- (runs for both cases)
-        page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name=vehicle_info["state"]).click()
-        page.wait_for_timeout(3000)
-
-        # ---- PINCODE ----
-        page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name=vehicle_info["pin"]).click()
-        page.wait_for_timeout(2000)
-
-        # ---- STREET ADDRESS ----
-        page.get_by_role("combobox", name="Address Line").click()
-        page.get_by_role("option", name=vehicle_info["adrs"], exact=True).click()
-        page.wait_for_timeout(2000)
-
-        # ---- SAVE BUTTON (if address is added) ----
-        address_save = page.locator("button#save")
-        if address_save.is_visible():
-            address_save.click()
-            page.locator("div.box-card").nth(1).click()
+        # ---- Policyholder Residential Adress ---
+        motor_ph_adrs(page)
 
         # ---- Garage Types ----
         page.locator(".mat-select-placeholder").first.click()
@@ -239,15 +239,23 @@ def test_pc_motor(page):
         page.get_by_text("We respect your privacy and").click()
         page.get_by_text("I hereby confirm that I have").click()
 
+        # ---- Policy Holder Name ----
+        ph_name = page.locator(".qms-canvas-card-title-wrapper .heading-6").first.inner_text().strip()
+        print("Policy Holder name: ", ph_name)
+
         # ---- Get Quote Number -----
         quote_text = page.locator("text=Quote Reference #").locator("xpath=following-sibling::*").inner_text()
         quote_number = quote_text.strip()
         print("Quote Number:", quote_number)
 
+        # ---- Create Quotenr_vl ----
+        page.net_logger.set_quote_number(quote_number)
+
         # ====== NSTP FLOW FUNCTION CALL ======
         generate_quote_btn = nstp_flow(page, quote_number, vehicle_type="pc")
 
         # ---- Generate Quote Flow ----
+        generate_quote_btn = page.get_by_role("button", name="Generate Quote")
         if generate_quote_btn.is_visible():
             generate_quote_btn.click()
             print("Clicked on Generate Quote button")
@@ -273,16 +281,19 @@ def test_pc_motor(page):
 
         print("Policy is Issued and Schedule letter downloaded successfully.")
 
+        # --- Issue Policy Service call ----
+        page.net_logger.set_policy_number(policy_number)
+
         # --------- SAVE TO EXCEL ---------
         pc_excel(selected_coverage, quote_number, policy_number,
         sum_insured, act_prem, basic_prem, ncd,
         after_ncd, gross_premium, sst, stamp_duty, total)
 
         # -------- SEND EMAIL ---------
-        try:
-            send_email()
-        except Exception as e:
-            print("Email failed:", e)
+        # try:
+        #     send_email()
+        # except Exception as e:
+        #     print("Email failed:", e)
 
     except Exception as e:
         print(f"Test failed: {e}")

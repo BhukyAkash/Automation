@@ -8,12 +8,11 @@ from NB.test_cv import test_cv_motor
 from base_login import DATA
 
 
-@pytest.mark.no_network_logger
 class TestPC:
     def test_car(self, page):
 
         # ---- CV Automate (Browser 1 - TIPS) ----
-        try:
+        '''try:
             test_cv_motor(page)
             policy = DATA["policy"]
             print(f"Commercial Vehicle Policy: {policy}")
@@ -49,6 +48,26 @@ class TestPC:
             # DATA["stamp_duty"] = 10.0
             # DATA["total_prem"] = 2018.35
             # print(f"Commercial Vehicle Policy: {policy}")
+
+            # ---- SAP Inquiry (Browser 2) ----
+            sap_browser = page.playwright.chromium.launch(headless=False, args=["--start-maximized"])
+            sap_context = sap_browser.new_context(no_viewport=True)
+            sap_page = sap_context.new_page()
+
+            TestSAP().test_sap(sap_page)
+
+            sap_context.close()
+            sap_browser.close()
+
+        except Exception as e:
+            print("Test failed: ", e)
+            raise'''
+
+        # ---- MC Automate (Browser 1 - TIPS, relaunched) ----
+        try:
+            test_mc_motor(page)
+            policy = DATA["policy"]
+            print(f"Motor Cycle Policy: {policy}")
 
             # ---- SAP Inquiry (Browser 2) ----
             sap_browser = page.playwright.chromium.launch(headless=False, args=["--start-maximized"])
@@ -232,58 +251,20 @@ class TestSAP:
                     icm = text
                     break
 
-            print(f"SAP Act Premium  : {act_cell}")
-            print(f"SAP Gross Premium: {gross}")
-            print(f"SAP SST          : {sst}")
-            print(f"SAP Stamp Duty   : {sd_cell}")
-            print(f"Total Premium    : {total_cell}")
+            
             print(f"Inception Date   : {incep_cell}")
             print(f"End Date         : {end_cell}")
-            print(f"CD Postings      : {cd}")
-            print(f"ICM Postings     : {icm}")
 
-            tips_act = float(DATA["act_prem"])
-            sap_act = float(act_cell.replace(",", ""))
-            if tips_act == sap_act:
-                print("✅ Act Premium matched")
-            else:
-                print(f"❌ Act Premium not matched, TIPS = {tips_act} | SAP = {sap_act}")
+            DATA["act_premium"]     = act_cell
+            DATA["gross_premium"]   = gross
+            DATA["tax"]             = sst
+            DATA["stamp"]           = sd_cell
+            DATA["total_premium"]   = total_cell
+            DATA["collection"]      = cd
+            DATA["comission"]       = icm
 
-            tips_gross = float(DATA["gross_prem"])
-            sap_gross = float(gross.replace(",", ""))
-            if tips_gross == sap_gross:
-                print("✅ Gross Premium matched")
-            else:
-                print(f"❌ Gross Premium not matched, TIPS = {tips_gross} | SAP = {sap_gross}")
-
-            tips_sst = float(DATA["sst"])
-            sap_sst = float(sst.replace(",", ""))
-            if tips_sst == sap_sst:
-                print("✅ SST matched")
-            else:
-                print(f"❌ SST not matched, TIPS = {tips_sst} | SAP = {sap_sst}")
-
-            tips_sd = float(DATA["stamp_duty"])
-            sap_sd = float(sd_cell.replace(",", ""))
-            if tips_sd == sap_sd:
-                print("✅ Stamp Duty matched")
-            else:
-                print(f"❌ Stamp Duty not matched, TIPS = {tips_sd} | SAP = {sap_sd}")
-
-            tips_total = float(DATA["total_prem"])
-            sap_cd = float(cd.replace(",", ""))
-            if tips_total == sap_cd:
-                print("✅ CD (Total Premium) matched")
-            else:
-                print(f"❌ CD (Total Premium) not matched, TIPS = {tips_total} | SAP = {sap_cd}")
-
-            expec_icm = round(tips_gross * 0.1, 2)
-            sap_icm = float(icm.replace(",", ""))
-            if expec_icm == sap_icm:
-                print("✅ ICM Premium matched")
-            else:
-                print(f"❌ ICM Premium not matched, Expected = {expec_icm} | SAP = {sap_icm}")
-
+            # --- Premium Comparison ---
+            TestSAP.sap_prem(self, page)
 
         except Exception as e:
             print(f"Test failer: {e}")
@@ -291,3 +272,63 @@ class TestSAP:
 
         finally:
             TestSAP.pm_logout(page, page1)
+
+    def sap_prem(self, page):
+        act_cell    = DATA["act_premium"]
+        gross       = DATA["gross_premium"]
+        sst         = DATA["tax"]
+        sd_cell     = DATA["stamp"]
+        total_cell  = DATA["total_premium"]
+        cd          = DATA["collection"]
+        icm         = DATA["comission"]
+
+
+        print(f"SAP Act Premium  : {act_cell}")
+        print(f"SAP Gross Premium: {gross}")
+        print(f"SAP SST          : {sst}")
+        print(f"SAP Stamp Duty   : {sd_cell}")
+        print(f"Total Premium    : {total_cell}")
+        print(f"CD Postings      : {cd}")
+        print(f"ICM Postings     : {icm}")
+
+        tips_act = float(DATA["act_prem"])
+        sap_act = float(act_cell.replace(",", ""))
+        if tips_act == sap_act:
+            print("✅ Act Premium matched")
+        else:
+            print(f"❌ Act Premium not matched, TIPS = {tips_act} | SAP = {sap_act}")
+
+        tips_gross = float(DATA["gross_prem"])
+        sap_gross = float(gross.replace(",", ""))
+        if tips_gross == sap_gross:
+            print("✅ Gross Premium matched")
+        else:
+            print(f"❌ Gross Premium not matched, TIPS = {tips_gross} | SAP = {sap_gross}")
+
+        tips_sst = float(DATA["sst"])
+        sap_sst = float(sst.replace(",", ""))
+        if tips_sst == sap_sst:
+            print("✅ SST matched")
+        else:
+            print(f"❌ SST not matched, TIPS = {tips_sst} | SAP = {sap_sst}")
+
+        tips_sd = float(DATA["stamp_duty"])
+        sap_sd = float(sd_cell.replace(",", ""))
+        if tips_sd == sap_sd:
+            print("✅ Stamp Duty matched")
+        else:
+            print(f"❌ Stamp Duty not matched, TIPS = {tips_sd} | SAP = {sap_sd}")
+
+        tips_total = float(DATA["total_prem"])
+        sap_cd = float(cd.replace(",", ""))
+        if tips_total == sap_cd:
+            print("✅ CD (Total Premium) matched")
+        else:
+            print(f"❌ CD (Total Premium) not matched, TIPS = {tips_total} | SAP = {sap_cd}")
+
+        expec_icm = round(tips_gross * 0.1, 2)
+        sap_icm = float(icm.replace(",", ""))
+        if expec_icm == sap_icm:
+            print("✅ ICM Premium matched")
+        else:
+            print(f"❌ ICM Premium not matched, Expected = {expec_icm} | SAP = {sap_icm}")

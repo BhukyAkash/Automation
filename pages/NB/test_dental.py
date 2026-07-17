@@ -3,9 +3,9 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from base_login import login, navi_dental, start_date, dental_prem
-from mykad_id import generate_mykad
+from utils.mykad_id import generate_mykad
 from vehicle_info import ADRESS
-from excel_utils import dental
+from utils.excel_utils import dental
 
 # ---- Path References ----
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..")               # D:\Automation\pages

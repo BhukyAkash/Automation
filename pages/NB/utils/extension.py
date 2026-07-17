@@ -25,6 +25,7 @@ def pc_extension(page, coverage_type, flags):
     else:
         print("No Autobuddy package selected")
 
+    page.wait_for_timeout(3000)
     # ---- Extensions ----
     if flags["select_extensions"]:
         if coverage_type == "Comprehensive":
@@ -48,7 +49,7 @@ def pc_extension(page, coverage_type, flags):
             page.locator("span").filter(has_text=extension_name).get_by_role("button").click()
 
             if extension_name == "Windscreen Damage":
-                page.locator("mat-form-field").filter(has_text="Sum Insured *MYR").locator("#sumInsured").fill("800")
+                page.locator(".additional-benefit", has_text="Windscreen Damage").locator("input#sumInsured:not([readonly])").fill("800")
 
             elif extension_name == "Inclusion of Special Perils":
                 page.get_by_label("Extension Coverage").get_by_text("Vehicle Sum Insured", exact=True).click()
@@ -121,7 +122,7 @@ def cv_extension(page, coverage_type, flags):
         page.wait_for_timeout(1000)
         page.get_by_role("option", name="Motorist PA").click()
         page.wait_for_timeout(1000)
-        selected_package = page.locator("#mat-select-value-11 span.mat-select-min-line").inner_text()
+        selected_package = page.locator("#packageType .mat-select-min-line").inner_text()
         print("Selected Package:", selected_package)
 
         if "Motorist PA" in selected_package:

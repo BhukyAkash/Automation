@@ -206,7 +206,7 @@ def test_cv_motor(page):
         generate_quote_btn = page.get_by_role("button", name="Generate Quote")
         if generate_quote_btn.is_visible():
             generate_quote_btn.click()
-            print("STP process, clicked on Generate Quote button")
+            print("Clicked on Generate Quote button")
 
             with page.expect_download() as download_info:
                 page.get_by_role("button", name="Submit").click()

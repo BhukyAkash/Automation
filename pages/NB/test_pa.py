@@ -5,18 +5,20 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import pytest
 import random
 from base_login import login, navi_pa, pa_prem
-from mykad_id import generate_mykad, child_mykad, young_mykad
-from vehicle_info import ADRESS
-from excel_utils import pa_excel, get_pa_data
+from utils.mykad_id import generate_mykad, child_mykad, young_mykad
+from vehicle_info import pa_ph_adrs
+from utils.excel_utils import pa_excel, get_pa_data
+from utils.nstp_flow import pa_nstp_flow
 
 # ---- Path References ----
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..")
 DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), "downloads")
 
 # ---- For multiple rows executions ---
-@pytest.mark.parametrize("pa_row", [3])     # Test case row
+@pytest.mark.parametrize("pa_row", [6])     # Test case row
 
 def test_PA(page, pa_row):
+    vehicle_type = "pa"
 
     try:
         print("\n===================== Issuance of PA policy ==================")
@@ -38,7 +40,7 @@ def test_PA(page, pa_row):
 
         # ---- MYKAD ID ----
         page.locator("#dx-input-0").nth(1).click()
-        mykad = generate_mykad()
+        mykad = generate_mykad()  #"900908096753"
         page.locator("#dx-input-0").nth(1).fill(mykad)
         print("MyKad ID:", mykad)
 
@@ -88,6 +90,31 @@ def test_PA(page, pa_row):
             page.locator("mat-radio-button:has-text('No')").nth(1).click()
             print("Weekly Benefit: No")
 
+        elif class_ques == "Class 3":
+            # ---- INTERNAL CLASSIFICATION ----
+            
+            page.locator(".mat-select-placeholder").first.click()
+            page.get_by_role("option", name=class_ques).click()
+
+            # ----  Occupation -----
+            page.locator("mat-select#occupation").click()
+            page.get_by_role("option", name="Not in List").click()
+
+            # ----  Occupation Name -----
+            page.locator(".occupation-name-field input").fill("Farmer")
+
+            # ---- PRODUCT SELECTION ----
+            page.locator("[formcontrolname='paProducts']").click()
+            page.get_by_role("option", name=selected_title).click()
+
+            # ---- PLAN TYPE ----
+            page.locator(".mat-select-placeholder").click()
+            page.get_by_role("option", name=plan_type).click()
+
+            # ---- WEEKLY BENEFIT ----
+            page.locator("mat-radio-button:has-text('No')").nth(1).click()
+            print("Weekly Benefit: No")
+
         elif class_ques == "Dependent":
             # ---- PROPOSER IS NOT THE INSURED ----
             page.get_by_text("Proposer is not the Insured").click()
@@ -113,9 +140,12 @@ def test_PA(page, pa_row):
             page.get_by_role("option", name=plan_type).click()
         else:
             raise ValueError(f"Unknown occupation class '{class_ques}' in PA sheet row {pa_row}. "
-                            f"Expected: Class 1, Class 2, Full-Time Student, Dependent")
+                            f"Expected: Class 1, Class 2, Class 3, Full-Time Student, Dependent")
 
         page.get_by_text("The Proposer/Person to be").click()
+
+        # ----- Minimize Screen ----
+        page.evaluate("document.body.style.zoom = '80%'")
 
         # ---- SAVE & NEXT ----
         page.get_by_role("button", name="Save & Next").click()
@@ -133,44 +163,27 @@ def test_PA(page, pa_row):
         except:
             pass
 
-        # ---- CHECK IF ADDRESS ALREADY EXISTS ----
+        # ---- Prosper Residential Adress ----
+        pa_ph_adrs(page)
+
+        '''# ---- CHECK IF ADDRESS ALREADY EXISTS ----
         add_button = page.locator("button[name='Add'], button:has-text('Add')").first
         try:
             add_button.wait_for(state="visible", timeout=3000)
             add_button.click()
             page.wait_for_timeout(1000)
         except:
-            pass
-
-        # ---- STATE ---- (runs for both cases)
-        page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name=ADRESS["state"]).click()
-        page.wait_for_timeout(3000)
-
-        # ---- PINCODE ----
-        page.locator(".mat-select-placeholder").first.click()
-        page.get_by_role("option", name=ADRESS["pin"]).click()
-        page.wait_for_timeout(2000)
-
-        # ---- STREET ADDRESS ----
-        page.get_by_role("combobox", name="Address Line").click()
-        page.get_by_role("option", name=ADRESS["adrs"], exact=True).click()
-        page.wait_for_timeout(2000)
-
-        # ---- SAVE BUTTON (if address is added) ----
-        address_save = page.get_by_role("button", name="Save")
-        if address_save.is_visible():
-            address_save.click()
+            pass'''
 
         # ---- CONTACT DETAILS ----
         page.get_by_role("textbox", name="123456789").fill("123456789")
         page.get_by_role("textbox", name="Enter").fill("akash@serole.com")
 
-        # rebate_value = str(random.randint(10, 25))
-        # rebate_locator = page.locator("mat-form-field").filter(has_text="Rebate to Proposer%").locator("#rebate")
-        # rebate_locator.click()
-        # rebate_locator.fill(rebate_value)
-        # print(f"Rebate: {rebate_value}%")
+        rebate_value = str(random.randint(10, 25))
+        rebate_locator = page.locator("mat-form-field").filter(has_text="Rebate to Proposer%").locator("#rebate")
+        rebate_locator.click()
+        rebate_locator.fill(rebate_value)
+        print(f"Rebate: {rebate_value}%")
 
         # ---- UNDERWRITING QUESTIONS ----
         radios = page.get_by_role("radio", name="No")
@@ -186,9 +199,18 @@ def test_PA(page, pa_row):
         quote_number = quote_text.strip()
         print("Quote Number:", quote_number)
 
+        # ---- Create Quotenr_vl ----
+        page.net_logger.set_quote_number(quote_number)
+
+        # ---- For Underwriter worklist ----
+        pa_nstp_flow(page, quote_number)
+
         # ---- GENERATE & DOWNLOAD QUOTE ----
-        page.get_by_role("button", name="Generate Quote").wait_for()
-        page.get_by_role("button", name="Generate Quote").click()
+        try:
+            page.get_by_role("button", name="Generate Quote").wait_for(timeout=5000)
+            page.get_by_role("button", name="Generate Quote").click()
+        except:
+            print("No Generate quote button")
 
         page.get_by_role("button", name="Download Quote & PDS Documents").click()
         page.locator("form").get_by_text("Download Quote & PDS Documents").click()
@@ -218,7 +240,7 @@ def test_PA(page, pa_row):
         page.get_by_text("Download Policy Schedule").click()
         print("Policy Issued successfully")
 
-        page.wait_for_timeout(6000)
+        page.wait_for_timeout(3000)
 
         with page.expect_download() as download_info:
             page.get_by_role("button", name="Download").click()
@@ -249,4 +271,4 @@ def test_PA(page, pa_row):
         page.get_by_text(username, exact=True).click()
         page.get_by_text("Sign Out", exact=True).click()
         print("Terminated the session")
-        page.wait_for_timeout(15000)
+        page.wait_for_timeout(5000)

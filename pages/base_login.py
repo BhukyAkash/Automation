@@ -1,6 +1,8 @@
 import re
 from datetime import datetime
 
+DATA = {}
+
 def login(page):
     page.goto("https://agent-uat.tuneinsurance.com/")
     username = "playwright.test@serole.com" #"vijaykumar.likki@serole.com"        # 
@@ -139,6 +141,8 @@ def issue_policy(page):
         if policy_number == "-":
             print("Policy not issued after 2 minutes, something went wrong")
 
+        DATA["policy"] = policy_number
+
         return policy_number
 
 # ---- Premiums -----
@@ -153,39 +157,48 @@ def motor_prem(page):
     # ---- Premiums ----
     sum_insured1 = page.locator("li").filter(has_text="Vehicle Sum Insured").locator(".summary-result-value").inner_text().strip()
     sum_insured = extract_myr(sum_insured1)
-    print("\nSum Insured:", sum_insured)
 
     ap = page.locator("li").filter(has_text="Act Premium").locator(".summary-result-value").inner_text().strip()
     act_prem = extract_myr(ap)
-    print("Act Premium:", act_prem)
 
     bp = page.locator("li").filter(has_text="Basic Premium").locator(".summary-result-value").inner_text().strip()
     basic_prem = extract_myr(bp)
-    print("Basic Premium:", basic_prem)
 
     ncd_value = page.locator("(//li[contains(.,'NCD')]//span[contains(@class,'summary-result-value')])[1]").inner_text().strip()
     ncd = extract_myr(ncd_value)
-    print("NCD Premium:", ncd)
 
     ncd_after = page.locator("li").filter(has_text="Premium after NCD").locator(".summary-result-value").inner_text().strip()
     after_ncd = extract_myr(ncd_after)
-    print("Premium after NCD:", after_ncd)
 
     gp = page.locator("li").filter(has_text="Gross Premium").locator(".summary-result-value").inner_text().strip()
-    gross_premium = extract_myr(gp)
-    print("Gross Premium:", gross_premium)
+    gross_premium =  extract_myr(gp)
 
     tax = page.locator("li").filter(has_text="SST").locator(".summary-result-value").inner_text().strip()
     sst = extract_myr(tax)
-    print("SST:", sst)
 
     sd = page.locator("li").filter(has_text="Stamp Duty").locator(".summary-result-value").inner_text().strip()
     stamp_duty = extract_myr(sd)
-    print("Stamp Duty:", stamp_duty)
 
     total_payable = page.locator("div").filter(has_text="Total Payable Premium").locator(".final-amount").inner_text().strip()
     total = extract_myr(total_payable)
-    print("Total Premium:", total)
+
+    # ---- TIPS Premium ----
+    print(f"Sum Insured         : {sum_insured}")
+    print(f"Act Premium         : {act_prem}")
+    print(f"Basic Premium       : {basic_prem}")
+    print(f"NCD Premium         : {ncd}")
+    print(f"Premium after NCD   : {after_ncd}")
+    print(f"Gross Premium       : {gross_premium}")
+    print(f"SST                 : {sst}")
+    print(f"Stamp Duty          : {stamp_duty}")
+    print(f"Total Premium       : {total}")
+
+    # --- Stroing values ---
+    DATA["act_prem"]     = act_prem
+    DATA["gross_prem"]   = gross_premium
+    DATA["sst"]          = sst
+    DATA["stamp_duty"]   = stamp_duty
+    DATA["total_prem"]   = total
 
     return sum_insured, act_prem, basic_prem, ncd, after_ncd, gross_premium, sst, stamp_duty, total
 
